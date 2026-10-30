@@ -3,7 +3,7 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-# Die Suchbegriffe für die Smyths-Datenbank
+# Überwachte Kategorien / Suchbegriffe
 KEYWORDS = ["pokemon", "one piece card game"]
 
 headers = {
@@ -14,7 +14,7 @@ headers = {
 
 session = requests.Session()
 
-# 1. SCHRITT: Suchbegriffe scannen und Produkte live einsammeln
+# 1. SCHRITT: Suchbegriffe scannen und alle Produkt-IDs live einsammeln
 all_discovered_products = {}
 
 for keyword in KEYWORDS:
@@ -30,7 +30,6 @@ for keyword in KEYWORDS:
                 name_lower = name.lower()
                 
                 # STRENGER FILTER: Nur echtes TCG-Sammelkartenzubehör durchlassen
-                # Schließt Plüschtiere, Videospiele, Spielfiguren etc. rigoros aus
                 allowed_terms = ["booster", "display", "tin", "deck", "box", "kollektion", "blister", "top-trainer", "etb", "sammelkarten"]
                 is_tcg_product = any(term in name_lower for term in allowed_terms)
                 
