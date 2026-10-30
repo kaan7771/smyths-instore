@@ -4,7 +4,6 @@ from datetime import datetime
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-# HIER DIE PRODUKTE DIREKT MIT VOLLSTÄNDIGER API-URL EINTRAGEN
 PRODUCTS = [
     {
         "id": "231555",
@@ -19,8 +18,13 @@ PRODUCTS = [
 ]
 
 def check_smyths_stock():
+    # Erweiterte Browser-Simulation (Headers) gegen die Cloudflare-Blockade
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://smythstoys.com",
+        "Origin": "https://smythstoys.com"
     }
     
     for prod in PRODUCTS:
@@ -85,5 +89,5 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
     requests.post(DISCORD_WEBHOOK, json=payload)
     print(f"🔥 Live-Restock für {store_name} als Text-Box gesendet!")
 
-# Überwachung starten
 check_smyths_stock()
+
