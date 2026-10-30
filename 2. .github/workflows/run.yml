@@ -1,0 +1,27 @@
+name: Smyths Toys 5-Min Monitor
+
+on:
+  schedule:
+    # Das absolute Maximum: GitHub startet das Skript ca. alle 5 Minuten
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Ermöglicht es uns, den Bot manuell zu testen
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Code auschecken
+      uses: actions/checkout@v4
+
+    - name: Python installieren
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Bibliotheken installieren
+      run: pip install requests
+
+    - name: Monitor ausführen
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: python monitor.py
