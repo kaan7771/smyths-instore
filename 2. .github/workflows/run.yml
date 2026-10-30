@@ -2,9 +2,8 @@ name: Smyths Toys 5-Min Monitor
 
 on:
   schedule:
-    # Das absolute Maximum: GitHub startet das Skript ca. alle 5 Minuten
     - cron: '*/5 * * * *'
-  workflow_dispatch: # Ermöglicht es uns, den Bot manuell zu testen
+  workflow_dispatch:
 
 jobs:
   check-stock:
