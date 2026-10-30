@@ -10,13 +10,13 @@ PRODUCT_IDS = ["231555", "233342"]
 def check_smyths_stock(product_id):
     print(f"🔍 Prüfe Bestände für Produkt-ID: {product_id}...")
     
+    # Komplett feste URLs ohne riskante automatische Schrägstriche
     detail_url = f"https://smythstoys.com{product_id}"
+    api_url = f"https://smythstoys.com{product_id}/pointOfServices"
+    
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
-    
-    # KORREKTUR: Schrägstrich vor der Produkt-ID hinzugefügt
-    api_url = f"https://smythstoys.com{product_id}/pointOfServices"
     
     try:
         response = requests.get(api_url, headers=headers, timeout=10)
@@ -37,7 +37,6 @@ def check_smyths_stock(product_id):
             if stock_data.get("code") == "inStock" or stock_level > 0:
                 store_name = store.get("name", "Unbekannte Filiale")
                 
-                # Neues Bestands-System: Zeigt Zahl pur oder 15+ an
                 if stock_level >= 15:
                     stock_display = "15+"
                 else:
