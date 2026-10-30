@@ -4,45 +4,82 @@ from datetime import datetime
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-print("⚡ Sende bereinigtes Embed ohne überflüssige Icons...")
+# HIER DIE PRODUKT-IDS EINTRAGEN, DIE ÜBERWACHT WERDEN SOLLEN
+PRODUCT_IDS = ["231555", "233342"] 
 
-prod_id = "231555"
-prod_name = "One Piece TCG: Wings of the Captain Booster Display"
-price = "119,99 €"
-product_url = f"https://smythstoys.com{prod_id}"
+def check_smyths_stock(product_id):
+    print(f"🔍 Prüfe Bestände für Produkt-ID: {product_id}...")
+    
+    detail_url = f"https://smythstoys.com{product_id}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    
+    api_url = f"https://smythstoys.com{product_id}/pointOfServices"
+    
+    try:
+        response = requests.get(api_url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            print(f"⚠️ API-Fehler ({response.status_code}) bei ID {product_id}")
+            return
+            
+        data = response.json()
+        
+        prod_name = data.get("product", {}).get("name", f"Smyths Produkt {product_id}")
+        price = data.get("product", {}).get("price", {}).get("formattedValue", "N/A")
+        
+        for store in data.get("pointOfServices", []):
+            stock_data = store.get("stockLevelStatus", {})
+            stock_level = store.get("stockLevel", 0)
+            
+            # Nur benachrichtigen, wenn Ware verfügbar ist
+            if stock_data.get("code") == "inStock" or stock_level > 0:
+                store_name = store.get("name", "Unbekannte Filiale")
+                
+                # Neues Bestands-System: Zeigt Zahl pur oder 15+ an
+                if stock_level >= 15:
+                    stock_display = "15+"
+                else:
+                    stock_display = str(stock_level)
+                
+                address_data = store.get("address", {})
+                full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
+                maps_url = f"https://google.com+{store_name.replace(' ', '+')}"
+                
+                send_discord_alert(prod_name, price, store_name, stock_display, full_address, detail_url, maps_url)
+                
+    except Exception as e:
+        print(f"❌ Fehler beim Scrapen von ID {product_id}: {e}")
 
-store_name = "Hamburg-Altona"
-stock_level = 3
-full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
-maps_url = f"https://google.com+{store_name}"
-
-# Aktuelle Uhrzeit ermitteln
-now = datetime.now()
-timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
-
-embed = {
-    "title": "SMYTHS TOYS INSTORE RESTOCK",
-    "description": (
-        f"📝 **Product:** {prod_name}\n"
-        f"💰 **Price:** {price}\n\n"
-        f"📍 **Store:** {store_name}\n"
-        f"📦 **Stock:** {stock_level} Stück ✅\n"
-        f"🏠 **Address:** {full_address}\n\n"
+def send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
+    now = datetime.now()
+    timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
+    
+    # Altes Box-Design, angepasst auf deine neuen Felder (Englisch, ohne Kreise, ohne vor Ort)
+    fancy_text = (
+        f"╔════════════════════════════════════════════╗\n"
+        f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
+        f"╚════════════════════════════════════════════╝\n\n"
+        f"📝 **Product:** `{prod_name}`\n"
+        f"💰 **Price:** `{price}`\n\n"
+        f"📍 **Store:** `{store_name}`\n"
+        f"📦 **Stock:** `{stock_display} ✅`\n"
+        f"🏠 **Address:** `{full_address}`\n\n"
         f"🔗 **Links:**\n"
         f"• [Product]({product_url})\n"
-        f"• [Google Maps Navigation]({maps_url})"
-    ),
-    "color": 16746496,  # Orange farbener Akzentbalken
-    "footer": {
-        "text": f"TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}"
+        f"• [Google Maps Navigation]({maps_url})\n\n"
+        f"────────────────────────────────────────\n"
+        f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
+    )
+    
+    payload = {
+        "username": "TCGAlarm",
+        "content": fancy_text
     }
-}
+    
+    requests.post(DISCORD_WEBHOOK, json=payload)
+    print(f"🔥 Live-Restock für {store_name} als Text-Box gesendet!")
 
-payload = {
-    "username": "TCGAlarm",
-    "embeds": [embed]
-}
-
-requests.post(DISCORD_WEBHOOK, json=payload)
-print(f"🔥 Bereinigter Alarm erfolgreich gesendet!")
-
+# Alle Produkte prüfen
+for pid in PRODUCT_IDS:
+    check_smyths_stock(pid)
