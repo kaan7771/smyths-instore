@@ -3,7 +3,7 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-# DEINE FESTEN DAUER-FAVORITEN
+# DEINE FESTEN DAUER-FAVORITEN (Werden immer garantiert als Erstes gescannt)
 FAVORITE_IDS = {
     "222384": "One Piece TCG: Booster Pack (sortiert)",
     "236166": "One Piece TCG: Zoro & Sanji Starter Deck (ST-12)",
@@ -27,9 +27,11 @@ headers = {
 session = requests.Session()
 all_discovered_products = {}
 
+# 1. Schritt: Favoriten einspeisen
 for fav_id, fav_name in FAVORITE_IDS.items():
     all_discovered_products[fav_id] = fav_name
 
+# 2. Schritt: Live-Katalogsuche nach neuen Artikeln
 for keyword in KEYWORDS:
     search_url = f"https://smythstoys.com{keyword}&pageSize=100"
     try:
@@ -47,8 +49,9 @@ for keyword in KEYWORDS:
     except Exception:
         pass
 
-print(f"🔎 Überwache aktuell insgesamt {len(all_discovered_products)} Produkte.")
+print(f"⚡ Ultra-Express-Überwachung für {len(all_discovered_products)} Produkte gestartet.")
 
+# 3. Schritt: DOPPELTE EXPRESS-PRÜFUNG (Online + Filialen zeitgleich) für ALLE Produkte
 for prod_id, prod_name in all_discovered_products.items():
     API_URL = f"https://smythstoys.com{prod_id}/stock"
     try:
@@ -57,12 +60,11 @@ for prod_id, prod_name in all_discovered_products.items():
             data = response.json()
             price = data.get("price", {}).get("formattedValue", "N/A")
             image_url = f"https://smythstoys.com{data.get('productImage')}" if data.get('productImage') else "https://imgur.com"
+            product_url = f"https://smythstoys.comp/{prod_id}"
             
-            # EXPRESS-CHECK: Sofort prüfen, ob es ONLINE direkt in den Warenkorb gelegt werden kann!
-            # Das umgeht die langsame Filial-Synchronisation der Smyths-Server
+            # --- CHECK A: BLITZSCHNELLER ONLINE-LAGER CHECK ---
             online_stock = data.get("stockLevel", 0)
-            if online_stock > 0 or "purchasable" in str(data).lower():
-                product_url = f"https://smythstoys.comp/{prod_id}"
+            if online_stock > 0 or data.get("stockLevelStatus") == "inStock":
                 payload = {
                     "username": "TCG Alerts Monitor",
                     "avatar_url": "https://imgur.com",
@@ -71,22 +73,21 @@ for prod_id, prod_name in all_discovered_products.items():
                             "title": prod_name,
                             "description": "⚡ **Smyths Toys ONLINE EXPRESS RESTOCK!** ⚡",
                             "url": product_url,
-                            "color": 16711680, # Rote Farbe für höchste Priorität
+                            "color": 16711680, # Rot für Online-Drop (Sofort zuschlagen!)
                             "thumbnail": {"url": image_url},
                             "fields": [
                                 {"name": "Price", "value": price, "inline": False},
                                 {"name": "Store", "value": "Smyths Toys Onlineshop (Zentrallager)", "inline": True},
-                                {"name": "Stock", "value": f"{online_stock} Stück online verfügbar!", "inline": True},
+                                {"name": "Stock", "value": f"{online_stock} Stück online!", "inline": True},
                                 {"name": "Links", "value": f"[Direkt bestellen]({product_url})", "inline": False}
                             ],
-                            "footer": {"text": "TCG Express Monitor"}
+                            "footer": {"text": "TCG Express Monitor • Online-Abfang-Modus"}
                         }
                     ]
                 }
                 requests.post(DISCORD_WEBHOOK, json=payload)
-                continue
 
-            # Standard Filial-Scan läuft im Hintergrund weiter mit
+            # --- CHECK B: BUNDESWEITER LOKALER FILIAL CHECK (Läuft zeitgleich mit!) ---
             stores = data.get("stores", [])
             for store in stores:
                 stock_level = store.get("stockLevel", 0)
@@ -97,7 +98,6 @@ for prod_id, prod_name in all_discovered_products.items():
                     postal_code = store.get("address", {}).get("postalCode", "")
                     town = store.get("address", {}).get("town", "")
                     full_address = f"{address_1} {address_2}, {postal_code} {town}".strip()
-                    product_url = f"https://smythstoys.comp/{prod_id}"
                     maps_url = f"https://google.com+{store_name}"
                     
                     payload = {
@@ -106,9 +106,9 @@ for prod_id, prod_name in all_discovered_products.items():
                         "embeds": [
                             {
                                 "title": prod_name,
-                                "description": "固定 **Smyths Toys Instore Restock**",
+                                "description": "🟠 **Smyths Toys Instore Restock**",
                                 "url": product_url,
-                                "color": 16766720,
+                                "color": 16766720, # Orange für Ladenbestände vor Ort
                                 "thumbnail": {"url": image_url},
                                 "fields": [
                                     {"name": "Price", "value": price, "inline": False},
@@ -116,11 +116,11 @@ for prod_id, prod_name in all_discovered_products.items():
                                     {"name": "Stock", "value": f"{stock_level}+" if stock_level >= 15 else str(stock_level), "inline": True},
                                     {"name": "Address", "value": full_address, "inline": False},
                                     {"name": "Links", "value": f"[Google Maps]({maps_url}) · [Product]({product_url})", "inline": False}
-                                ]
+                                ],
+                                "footer": {"text": "TCG Alerts • Instant Restock Pings"}
                             }
                         ]
                     }
                     requests.post(DISCORD_WEBHOOK, json=payload)
     except Exception:
         pass
-
