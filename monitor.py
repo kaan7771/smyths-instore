@@ -3,46 +3,49 @@ import json
 import urllib.request
 from datetime import datetime
 
-# Deine hochgeladene Webhook-URL für den direkten Kanalzugriff
-DISCORD_WEBHOOK_URL = "https://discord.com"
+# Holt das sichere Bot-Token aus deinen GitHub Secrets
+DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
-def send_clean_fake_ping():
+def send_forced_bot_pings():
+    if not DISCORD_TOKEN:
+        print("❌ Fehler: Kein DISCORD_TOKEN in den GitHub Secrets gefunden!")
+        return
+
+    # Deine verifizierte Kanal-ID aus Discord
+    api_url = "https://discord.com"
+    token = DISCORD_TOKEN.strip()
+    
     headers = {
+        "Authorization": f"Bot {token}",
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        "User-Agent": "DiscordBot (https://github.com, 1.0.0)"
     }
 
-    now = datetime.now()
-    timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
-    
-    # Das exakte, saubere Original-Layout deines Monitors
-    fancy_text = (
-        f"╔════════════════════════════════════════════╗\n"
-        f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
-        f"╚════════════════════════════════════════════╝\n\n"
-        f"📝 **Product:** `Pokémon TCG: Erzwungener Test-Erfolg`\n"
-        f"💰 **Price:** `€39.99`\n\n"
-        f"📍 **Store:** `Smyths Hamburg-Altona`\n"
-        f"📦 **Stock:** `5 ✅`\n"
-        f"🏠 **Address:** `Musterstraße 1, 22765 Hamburg`\n\n"
-        f"🔗 **Links:**\n"
-        f"• [Product](https://smythstoys.com)\n"
-        f"• [Google Maps Navigation](https://google.com)\n\n"
-        f"────────────────────────────────────────\n"
-        f"*TCGAlarm • Live Webhook • Smyths Monitor • heute um {timestamp_str}*"
-    )
-    
-    payload = json.dumps({
-        "username": "TCGAlarm Monitor",
-        "content": fancy_text
-    }).encode("utf-8")
-    
-    try:
-        req = urllib.request.Request(DISCORD_WEBHOOK_URL, data=payload, headers=headers)
-        with urllib.request.urlopen(req) as res:
-            pass
-        print("🔥 Sauberer Fake-Ping erfolgreich an Discord übermittelt!")
-    except Exception as e:
-        print(f"❌ Webhook-Fehler: {e}")
+    # Wir senden sofort 2 Test-Nachrichten hintereinander über den Bot
+    for i in range(1, 3):
+        now = datetime.now()
+        timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
+        
+        fancy_text = (
+            f"╔════════════════════════════════════════════╗\n"
+            f"        **🤖 ERZWUNGENER BOT-PING {i}/2 🤖**\n"
+            f"╚════════════════════════════════════════════╝\n\n"
+            f"📝 **Product:** `Reiner Bot-Verbindungstest`\n"
+            f"📦 **Status:** `Kanal-ID korrigiert und zugestellt! ✅`\n\n"
+            f"────────────────────────────────────────\n"
+            f"*Der Bot läuft direkt über das Token! • {timestamp_str}*"
+        )
+        
+        payload = json.dumps({"content": fancy_text}).encode("utf-8")
+        
+        try:
+            req = urllib.request.Request(api_url, data=payload, headers=headers)
+            with urllib.request.urlopen(req) as res:
+                print(f"🔥 Bot-Ping {i} erfolgreich gesendet!")
+        except urllib.error.HTTPError as e:
+            print(f"❌ Discord-Fehler bei Bot-Ping {i}: {e.code} - {e.read().decode('utf-8')}")
+        except Exception as e:
+            print(f"❌ Allgemeiner Fehler bei Bot-Ping {i}: {e}")
 
-send_clean_fake_ping()
+send_forced_bot_pings()
+
