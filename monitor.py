@@ -13,7 +13,7 @@ headers = {
 try:
     response = requests.get(PRODUCT_URL, headers=headers, timeout=15)
     
-    if "15+" in response.text or "In den Warenkorb" in response.text:
+    if "Spielzeug" in response.text or "In den Warenkorb" in response.text:
         # Hier bauen wir das strukturierte Embed (die Box unter dem Namen)
         payload = {
             "username": "TCG Alerts Monitor",  # Der Name ganz oben
