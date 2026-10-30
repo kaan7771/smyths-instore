@@ -3,15 +3,15 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-print("⚡ Zünde den bereinigten Restock mit echtem Bild-Link...")
+print("⚡ Sende bereinigten Alarm mit korrigierter Bild-URL...")
 
 prod_id = "231555"
 prod_name = "One Piece TCG: Wings of the Captain Booster Display"
 price = "119,99 €"
 product_url = f"https://smythstoys.com{prod_id}"
 
-# Die offizielle, funktionierende Bild-Struktur von Smyths Toys
-image_url = f"https://smythstoys.com{prod_id}.jpg"
+# Korrekter, offizieller CDN-Bild-Pfad von Smyths Toys
+image_url = f"https://image.smythstoys.com/zoom/{prod_id}.jpg"
 
 store_name = "Hamburg-Altona"
 stock_level = 3
@@ -35,9 +35,11 @@ fancy_text = (
     f"*TCGAlarm • Live Pings • Smyths Monitor*"
 )
 
+# username erzwingt den Namen "TCGAlarm" in Discord, unabhängig vom Webhook-Namen
 payload = {
+    "username": "TCGAlarm",
     "content": fancy_text
 }
 
 requests.post(DISCORD_WEBHOOK, json=payload)
-print(f"🔥 Bereinigter Alarm für {prod_name} erfolgreich gesendet!")
+print(f"🔥 Alarm für {prod_name} erfolgreich abgesetzt!")
