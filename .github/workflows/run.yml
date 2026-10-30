@@ -1,7 +1,10 @@
 name: Smyths Monitor
 
 on:
-  workflow_dispatch:
+  schedule:
+    # Startet das Skript vollautomatisch alle 5 Minuten rund um die Uhr
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Erlaubt es dir weiterhin, das Skript auch manuell zu starten
 
 jobs:
   check-stock:
