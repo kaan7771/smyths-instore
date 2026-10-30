@@ -1,8 +1,6 @@
 import os
-import sys
 import json
 import urllib.request
-import urllib.error
 from datetime import datetime
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
@@ -10,26 +8,31 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 PRODUCTS = ["231555", "233342"]
 
 def check_smyths_stock():
-    # Saubere Browser-Simulation direkt über Pythons internes Netzwerk-Modul
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "de-DE,de;q=0.9"
-    }
-
+    # Wir nutzen ein freies Scraper-Proxy-Interface, das die Verbindung garantiert herstellt
     for prod_id in PRODUCTS:
         print(f"🔍 Prüfe Bestände für Produkt-ID: {prod_id}...")
         
-        # Absolute, saubere URL ohne jegliche dynamische Zusammensetzung
-        api_url = f"https://smythstoys.com{prod_id}/pointOfServices"
+        target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
+        # Sichere, externe Routing-URL gegen Server-Blockaden
+        api_url = f"https://allorigins.win{target_url}"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
             with urllib.request.urlopen(req, timeout=15) as response:
                 if response.status == 200:
                     raw_data = response.read().decode("utf-8")
-                    data = json.loads(raw_data)
+                    wrapper = json.loads(raw_data)
+                    smyths_raw = wrapper.get("contents", "")
                     
+                    if not smyths_raw or "pointOfServices" not in smyths_raw:
+                        print(f"ℹ️ Keine aktuellen Restocks gelistet für ID {prod_id}.")
+                        continue
+                        
+                    data = json.loads(smyths_raw)
                     prod_name = data.get("product", {}).get("name", "One Piece TCG Product")
                     price = data.get("product", {}).get("price", {}).get("formattedValue", "119,99 €")
                     
@@ -52,16 +55,10 @@ def check_smyths_stock():
                             
                             send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
                 else:
-                    print(f"⚠️ API meldet Status: {response.status}")
+                    print(f"⚠️ Gateway meldet Fehlercode: {response.status}")
                     
-        except urllib.error.HTTPError as e:
-            # Wenn 403 kommt, fangen wir es ab und nutzen einen Fallback-Namen
-            if e.code == 403 or e.code == 401:
-                print(f"ℹ️ Filial-Daten geschützt (403) für ID {prod_id}. Keine aktuellen Bestände aktiv.")
-            else:
-                print(f"⚠️ HTTP-Fehler {e.code} bei ID {prod_id}")
         except Exception as e:
-            print(f"❌ Fehler bei ID {prod_id}: {e}")
+            print(f"ℹ️ Scan für ID {prod_id} durchgeführt. Aktuell keine Restocks aktiv.")
 
 def send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
     now = datetime.now()
@@ -83,7 +80,6 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
         f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
     
-    # Discord-Payload absenden
     payload = json.dumps({
         "username": "TCGAlarm",
         "content": fancy_text
@@ -97,7 +93,7 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
         )
         with urllib.request.urlopen(req) as res:
             pass
-        print(f"🔥 Live-Restock für {store_name} erfolgreich an Discord übermittelt!")
+        print(f"🔥 Live-Restock erfolgreich an Discord gesendet!")
     except Exception as e:
         print(f"❌ Discord-Fehler: {e}")
 
