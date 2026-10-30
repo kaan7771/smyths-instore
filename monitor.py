@@ -5,20 +5,27 @@ from datetime import datetime
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-PRODUCTS = ["231555", "233342"]
+# DEINE KOMPLETTE NEUE LISTE AUS ALLEN LINKS (41 PRODUKTE)
+PRODUCTS = [
+    "231555", "233342", "263107", "261550", "265957", "259979", "256326", 
+    "25412",  "254136", "254173", "254960", "256897", "256903", "257422", 
+    "257657", "257662", "257692", "257700", "260757", "260819", "260842", 
+    "260843", "261685", "261697", "262745", "262746", "263116", "263158", 
+    "263166", "263203", "264014", "264015", "264148", "264149", "264175", 
+    "264181", "264190", "265574", "265581", "265612", "265613", "252104", 
+    "258850"
+]
 
 def check_smyths_stock():
-    # Wir nutzen ein freies Scraper-Proxy-Interface, das die Verbindung garantiert herstellt
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+
     for prod_id in PRODUCTS:
         print(f"🔍 Prüfe Bestände für Produkt-ID: {prod_id}...")
         
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
-        # Sichere, externe Routing-URL gegen Server-Blockaden
         api_url = f"https://allorigins.win{target_url}"
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
@@ -29,12 +36,11 @@ def check_smyths_stock():
                     smyths_raw = wrapper.get("contents", "")
                     
                     if not smyths_raw or "pointOfServices" not in smyths_raw:
-                        print(f"ℹ️ Keine aktuellen Restocks gelistet für ID {prod_id}.")
                         continue
                         
                     data = json.loads(smyths_raw)
-                    prod_name = data.get("product", {}).get("name", "One Piece TCG Product")
-                    price = data.get("product", {}).get("price", {}).get("formattedValue", "119,99 €")
+                    prod_name = data.get("product", {}).get("name", f"TCG Produkt {prod_id}")
+                    price = data.get("product", {}).get("price", {}).get("formattedValue", "N/A")
                     
                     for store in data.get("pointOfServices", []):
                         stock_level = store.get("stockLevel", 0)
@@ -54,11 +60,10 @@ def check_smyths_stock():
                             maps_url = f"https://google.com+{store_name.replace(' ', '+')}"
                             
                             send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
-                else:
-                    print(f"⚠️ Gateway meldet Fehlercode: {response.status}")
-                    
+                            
         except Exception as e:
-            print(f"ℹ️ Scan für ID {prod_id} durchgeführt. Aktuell keine Restocks aktiv.")
+            # Fehler abfangen falls eine ID temporär offline genommen wird
+            continue
 
 def send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
     now = datetime.now()
@@ -93,7 +98,7 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
         )
         with urllib.request.urlopen(req) as res:
             pass
-        print(f"🔥 Live-Restock erfolgreich an Discord gesendet!")
+        print(f"🔥 Live-Restock erfolgreich an Discord übermittelt!")
     except Exception as e:
         print(f"❌ Discord-Fehler: {e}")
 
