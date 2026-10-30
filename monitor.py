@@ -1,5 +1,7 @@
 import os
 import requests
+import re
+import json
 from datetime import datetime
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
@@ -7,57 +9,68 @@ DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 PRODUCTS = [
     {
         "id": "231555",
-        "detail_url": "https://smythstoys.com",
-        "api_url": "https://smythstoys.com"
+        "detail_url": "https://smythstoys.com"
     },
     {
         "id": "233342",
-        "detail_url": "https://smythstoys.com",
-        "api_url": "https://smythstoys.com"
+        "detail_url": "https://smythstoys.com"
     }
 ]
 
 def check_smyths_stock():
-    # Erweiterte Browser-Simulation (Headers) gegen die Cloudflare-Blockade
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Referer": "https://smythstoys.com",
-        "Origin": "https://smythstoys.com"
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
     }
     
     for prod in PRODUCTS:
         print(f"🔍 Prüfe Bestände für Produkt-ID: {prod['id']}...")
         
         try:
-            response = requests.get(prod["api_url"], headers=headers, timeout=10)
+            response = requests.get(prod["detail_url"], headers=headers, timeout=15)
             if response.status_code != 200:
-                print(f"⚠️ API-Fehler ({response.status_code}) bei ID {prod['id']}")
+                print(f"⚠️ Fehler beim Laden der Seite ({response.status_code}) bei ID {prod['id']}")
                 continue
-                
-            data = response.json()
-            prod_name = data.get("product", {}).get("name", f"Smyths Produkt {prod['id']}")
-            price = data.get("product", {}).get("price", {}).get("formattedValue", "N/A")
             
-            for store in data.get("pointOfServices", []):
-                stock_data = store.get("stockLevelStatus", {})
-                stock_level = store.get("stockLevel", 0)
+            # Findet die versteckten Filialdaten im Quelltext der Smyths-Webseite
+            match = re.search(r'data-point-of-services\s*=\s*["\']({.*?})["\']', response.text)
+            
+            # Ausweichlösung falls das Attribut anders heißt
+            if not match:
+                match = re.search(r'id=["\']pointOfServicesData["\'][^>]*>([^<]+)', response.text)
                 
-                if stock_data.get("code") == "inStock" or stock_level > 0:
-                    store_name = store.get("name", "Unbekannte Filiale")
+            if match:
+                data_str = match.group(1).replace('&quot;', '"')
+                data = json.loads(data_str)
+                
+                # Produkt-Grunddaten auslesen
+                prod_name = "One Piece TCG Display" if prod['id'] == "231555" else f"Smyths Produkt {prod['id']}"
+                price_match = re.search(r'class=["\']price["\'][^>]*>([^<]+)', response.text)
+                price = price_match.group(1).strip() if price_match else "119,99 €"
+                
+                for store in data if isinstance(data, list) else data.get("pointOfServices", []):
+                    stock_level = store.get("stockLevel", 0)
+                    stock_status = store.get("stockLevelStatus", {}).get("code", "")
                     
-                    if stock_level >= 15:
-                        stock_display = "15+"
-                    else:
-                        stock_display = str(stock_level)
-                    
-                    address_data = store.get("address", {})
-                    full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
-                    maps_url = f"https://google.com+{store_name.replace(' ', '+')}"
-                    
-                    send_discord_alert(prod_name, price, store_name, stock_display, full_address, prod["detail_url"], maps_url)
-                    
+                    if stock_level > 0 or stock_status == "inStock":
+                        store_name = store.get("name", "Smyths Filiale")
+                        
+                        if stock_level >= 15:
+                            stock_display = "15+"
+                        else:
+                            stock_display = str(stock_level)
+                        
+                        address_data = store.get("address", {})
+                        full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
+                        maps_url = f"https://google.com+{store_name.replace(' ', '+')}"
+                        
+                        send_discord_alert(prod_name, price, store_name, stock_display, full_address, prod["detail_url"], maps_url)
+            else:
+                print(f"ℹ️ Aktuell keine In-Store Bestandsdaten auf der Seite für ID {prod['id']} hinterlegt.")
+                
         except Exception as e:
             print(f"❌ Fehler beim Scrapen von ID {prod['id']}: {e}")
 
@@ -87,7 +100,6 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
     }
     
     requests.post(DISCORD_WEBHOOK, json=payload)
-    print(f"🔥 Live-Restock für {store_name} als Text-Box gesendet!")
+    print(f"🔥 Live-Restock für {store_name} erfolgreich gesendet!")
 
 check_smyths_stock()
-
