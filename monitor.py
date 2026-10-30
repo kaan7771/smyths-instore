@@ -3,12 +3,15 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-print("⚡ Zünde den unblockbaren Profi-Restock im Code-Block-Design...")
+print("⚡ Zünde den Profi-Restock mit automatischer Bild-Vorschau...")
 
 prod_id = "231555"
 prod_name = "One Piece TCG: Wings of the Captain Booster Display"
 price = "119,99 €"
 product_url = f"https://smythstoys.com{prod_id}"
+
+# Automatisch generierte Bild-URL von Smyths Toys für das jeweilige Produkt
+image_url = f"https://smythstoys.com{prod_id}.jpg"
 
 store_name = "Hamburg-Altona"
 stock_level = 3
@@ -27,8 +30,9 @@ fancy_text = (
     f"🔗 **Links:**\n"
     f"• [🛒 Zum Produkt-Shop]({product_url})\n"
     f"• [🗺️ Google Maps Navigation]({maps_url})\n\n"
+    f"🖼️ **Produktbild:**\n{image_url}\n\n"
     f"────────────────────────────────────────\n"
-    f"*TCG Alerts • Live Pings • Smyths Monitor*"
+    f"*TCGAlarm • Live Pings • Smyths Monitor*"
 )
 
 payload = {
@@ -36,4 +40,5 @@ payload = {
 }
 
 requests.post(DISCORD_WEBHOOK, json=payload)
-print(f"🔥 Unblockbarer Premium-Alarm für {prod_name} erfolgreich gesendet!")
+print(f"🔥 Premium-Alarm für {prod_name} inklusive Bild erfolgreich gesendet!")
+
