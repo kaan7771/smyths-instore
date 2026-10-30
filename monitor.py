@@ -18,7 +18,7 @@ session = requests.Session()
 all_discovered_products = {}
 
 for keyword in KEYWORDS:
-    search_url = f"https://smythstoys.comapi/v2/smythstoys-de/products/search?fields=products(code,name)&query={keyword}&pageSize=100"
+    search_url = f"https://smythstoys.com/api/v2/smythstoys-de/products/search?fields=products(code,name)&query={keyword}&pageSize=100"
     try:
         search_res = session.get(search_url, headers=headers, timeout=12)
         if search_res.status_code == 200:
@@ -45,7 +45,7 @@ print(f"🔎 Automatisch {len(all_discovered_products)} TCG-Produkte (Booster, D
 
 # 2. SCHRITT: Jede gefundene ID auf bundesweite Filialbestände (ab 1 Produkt) prüfen
 for prod_id, prod_name in all_discovered_products.items():
-    API_URL = f"https://smythstoys.comapi/v2/smythstoys-de/products/{prod_id}/stock"
+    API_URL = f"https://smythstoys.com/api/v2/smythstoys-de/products/{prod_id}/stock"
     
     try:
         response = session.get(API_URL, headers=headers, timeout=10)
