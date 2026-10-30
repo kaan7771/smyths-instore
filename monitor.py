@@ -4,10 +4,9 @@ import urllib.request
 import urllib.parse
 from datetime import datetime
 
-# Holt das sichere Bot-Token direkt aus deinen GitHub Actions Secrets
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
+STATE_FILE = "stock_state.json"
 
-# DEINE KOMPLETTE LISTE AUS ALLEN LINKS (41 PRODUKTE)
 PRODUCTS = [
     "231555", "233342", "263107", "261550", "265957", "259979", "256326", 
     "25412",  "254136", "254173", "254960", "256897", "256903", "257422", 
@@ -18,14 +17,28 @@ PRODUCTS = [
     "258850"
 ]
 
+def load_state():
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_state(state):
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f, indent=4)
+
 def check_smyths_stock():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
+    
+    current_state = load_state()
+    new_state = {}
 
     for prod_id in PRODUCTS:
-        print(f"🔍 Prüfe Bestände für Produkt-ID: {prod_id}...")
-        
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
         api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}"
         
@@ -47,11 +60,18 @@ def check_smyths_stock():
                     for store in data.get("pointOfServices", []):
                         stock_level = store.get("stockLevel", 0)
                         stock_status = store.get("stockLevelStatus", {}).get("code", "")
+                        store_name = store.get("name", "Smyths Filiale")
                         
-                        # Scharfer Live-Modus: Reagiert nur auf echten Bestand vor Ort (> 0)
-                        if stock_level > 0 or stock_status == "inStock":
-                            store_name = store.get("name", "Smyths Filiale")
-                            
+                        is_in_stock = stock_level > 0 or stock_status == "inStock"
+                        state_key = f"{prod_id}_{store_name}"
+                        
+                        # Speichere aktuellen Zustand
+                        new_state[state_key] = is_in_stock
+                        
+                        # ➔ DAS GEHEIMNIS: Nur pingen, wenn es VORHER NICHT im Stock war, aber JETZT ist!
+                        was_in_stock = current_state.get(state_key, False)
+                        
+                        if is_in_stock and not was_in_stock:
                             if stock_level >= 15:
                                 stock_display = "15+"
                             else:
@@ -67,13 +87,13 @@ def check_smyths_stock():
         except Exception as e:
             continue
 
+    # Zustand für den nächsten Durchlauf einfrieren
+    save_state(new_state)
+
 def send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
     if not DISCORD_TOKEN:
         return
-
-    # Deine korrekte Textkanal-ID
     api_url = "https://discord.com"
-
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
@@ -93,23 +113,17 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         f"*TCGAlarm • Bot Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
     
-    payload = json.dumps({
-        "content": fancy_text
-    }).encode("utf-8")
-    
-    token = DISCORD_TOKEN.strip()
+    payload = json.dumps({"content": fancy_text}).encode("utf-8")
     headers = {
-        "Authorization": f"Bot {token}",
+        "Authorization": f"Bot {DISCORD_TOKEN.strip()}",
         "Content-Type": "application/json",
         "User-Agent": "DiscordBot (https://github.com, 1.0.0)"
     }
-    
     try:
         req = urllib.request.Request(api_url, data=payload, headers=headers)
         with urllib.request.urlopen(req) as res:
             pass
-        print(f"🔥 Live-Restock erfolgreich übermittelt!")
-    except Exception as e:
+    except:
         pass
 
 check_smyths_stock()
