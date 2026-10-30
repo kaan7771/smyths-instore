@@ -3,13 +3,13 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-print("⚡ Starte künstlichen Ultra-Express-Testlauf...")
+print("⚡ Starte künstlichen Ultra-Express-Testlauf (Abgesichert)...")
 
-# Wir simulieren einen echten Datenbank-Treffer
 prod_id = "231555"
 prod_name = "One Piece TCG: Wings of the Captain Booster Display"
 price = "119,99 €"
-image_url = "https://smythstoys.com"
+# Ein unfehlbarer Bild-Link, den Discord garantiert lädt!
+image_url = "https://imgur.com"
 product_url = f"https://smythstoys.com{prod_id}"
 
 # Künstliche Filialdaten für Hamburg
@@ -44,6 +44,6 @@ payload = {
     }]
 }
 
-# Absenden an Discord
 requests.post(DISCORD_WEBHOOK, json=payload)
 print(f"🔥 Künstlicher Alarm für {prod_name} erfolgreich an Discord gesendet!")
+
