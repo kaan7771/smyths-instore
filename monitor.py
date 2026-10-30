@@ -1,40 +1,51 @@
+import os
 import json
 import urllib.request
+import urllib.parse
 from datetime import datetime
 
-# Deine verifizierte Webhook-URL mit dem offiziellen /slack Kompatibilitäts-Zusatz
-SLACK_WEBHOOK_URL = "https://discord.com"
+# Deine Webhook-URL aus der Chat-Nachricht
+DISCORD_WEBHOOK_URL = "https://discord.com"
 
-def send_forced_slack_ping():
+def fake_smyths_stock_run():
+    # Wir simulieren einfach 2 erfolgreiche Treffer direkt hier drin
+    simulated_products = [
+        {"name": "Pokémon TCG: Sanitoes Premium Kollektion", "price": "€39.99", "store": "Smyths Hamburg-Altona", "stock": "5"},
+        {"name": "Glurak ex Super-Premium-Kollektion", "price": "€79.99", "store": "Smyths Berlin-Mall of Berlin", "stock": "12"}
+    ]
+    
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0"
     }
 
-    now = datetime.now()
-    timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
-    
-    # Slack-kompatibles Payload-Format, das Discords Filter direkt umgeht
-    payload_data = {
-        "username": "TCGAlarm Live-Test",
-        "text": (
+    for idx, prod in enumerate(simulated_products, 1):
+        now = datetime.now()
+        timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
+        
+        fancy_text = (
             f"╔════════════════════════════════════════════╗\n"
-            f"        **⚙️ ERZWUNGENER LIVE FAKE-PING ⚙️**\n"
+            f"        **🔥 SMYTHS LIVE RESTOCK SIMULATION {idx}/2 🔥**\n"
             f"╚════════════════════════════════════════════╝\n\n"
-            f"📝 **Product:** `Smyths Instore Brücken-Test`\n"
-            f"📦 **Status:** `Verbindung erfolgreich erzwungen! ✅`\n\n"
+            f"📝 **Product:** `{prod['name']}`\n"
+            f"💰 **Price:** `{prod['price']}`\n\n"
+            f"📍 **Store:** `{prod['store']}`\n"
+            f"📦 **Stock:** `{prod['stock']} ✅`\n"
+            f"🏠 **Address:** `Musterstraße, Deutschland`\n\n"
             f"────────────────────────────────────────\n"
-            f"*Der Webhook-Kanal steht! • {timestamp_str}*"
+            f"*Simulierter Test-Ping über Webhook-Route • {timestamp_str}*"
         )
-    }
-    
-    payload = json.dumps(payload_data).encode("utf-8")
-    
-    try:
-        req = urllib.request.Request(SLACK_WEBHOOK_URL, data=payload, headers=headers)
-        with urllib.request.urlopen(req) as res:
-            print("🔥 Absoluter Webhook-Fallpack-Ping erfolgreich rausgefeuert!")
-    except Exception as e:
-        print(f"❌ Kritischer Fehler beim Erzwingen: {e}")
+        
+        payload = json.dumps({
+            "username": "TCGAlarm Monitor",
+            "content": fancy_text
+        }).encode("utf-8")
+        
+        try:
+            req = urllib.request.Request(DISCORD_WEBHOOK_URL, data=payload, headers=headers)
+            with urllib.request.urlopen(req) as res:
+                print(f"🔥 Simulierter Live-Ping {idx} übermittelt!")
+        except Exception as e:
+            print(f"❌ Fehler: {e}")
 
-send_forced_slack_ping()
+fake_smyths_stock_run()
