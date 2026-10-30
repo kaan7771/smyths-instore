@@ -1,11 +1,13 @@
 import os
 import json
 import urllib.request
+import urllib.parse
 from datetime import datetime
 
-DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
+# Holt das sichere Bot-Token aus den GitHub Actions Secrets
+DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
-# DEINE KOMPLETTE NEUE LISTE AUS ALLEN LINKS (41 PRODUKTE)
+# DEINE KOMPLETTE LISTE AUS ALLEN LINKS (41 PRODUKTE)
 PRODUCTS = [
     "231555", "233342", "263107", "261550", "265957", "259979", "256326", 
     "25412",  "254136", "254173", "254960", "256897", "256903", "257422", 
@@ -25,7 +27,7 @@ def check_smyths_stock():
         print(f"🔍 Prüfe Bestände für Produkt-ID: {prod_id}...")
         
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
-        api_url = f"https://allorigins.win{target_url}"
+        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
@@ -57,15 +59,21 @@ def check_smyths_stock():
                             address_data = store.get("address", {})
                             full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
                             product_url = f"https://smythstoys.com{prod_id}"
-                            maps_url = f"https://google.com+{store_name.replace(' ', '+')}"
+                            maps_url = f"https://google.com{urllib.parse.quote(store_name)}"
                             
-                            send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
+                            send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
                             
         except Exception as e:
-            # Fehler abfangen falls eine ID temporär offline genommen wird
             continue
 
-def send_discord_alert(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
+def send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
+    if not DISCORD_TOKEN:
+        print("❌ Fehler: Kein DISCORD_TOKEN in den Umgebungsvariablen gefunden!")
+        return
+
+    # Deine korrekte API-URL mit deiner Kanal-ID
+    api_url = "https://discord.com"
+
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
@@ -82,25 +90,28 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
         f"• [Product]({product_url})\n"
         f"• [Google Maps Navigation]({maps_url})\n\n"
         f"────────────────────────────────────────\n"
-        f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
+        f"*TCGAlarm • Bot Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
     
     payload = json.dumps({
-        "username": "TCGAlarm",
         "content": fancy_text
     }).encode("utf-8")
     
     try:
         req = urllib.request.Request(
-            DISCORD_WEBHOOK, 
+            api_url, 
             data=payload, 
-            headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
+            headers={
+                "Authorization": f"Bot {DISCORD_TOKEN}",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0"
+            }
         )
         with urllib.request.urlopen(req) as res:
             pass
-        print(f"🔥 Live-Restock erfolgreich an Discord übermittelt!")
+        print(f"🔥 Bot-Ping erfolgreich an Discord-Kanal übermittelt!")
     except Exception as e:
-        print(f"❌ Discord-Fehler: {e}")
+        print(f"❌ Discord-Bot-Fehler: {e}")
 
 check_smyths_stock()
 
