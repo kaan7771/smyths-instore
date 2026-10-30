@@ -3,6 +3,9 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
+# Die Suchbegriffe, mit denen wir JEDES TCG-Produkt im Smyths-System aufspüren
+KEYWORDS = ["pokemon", "one piece card game"]
+
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "application/json",
@@ -12,57 +15,53 @@ headers = {
 session = requests.Session()
 all_discovered_products = {}
 
-# ==============================================================================
-# 1. SCHRITT: SCANNE AUTOMATISCH DIE RELEVANTEN ID-NUMMERNBLÖCKE FÜR TCG (BLISTER/ETBS)
-# ==============================================================================
-# Wir scannen die Nummern-Kreise, in denen Smyths TCG-Artikel einspeist (z.B. 210160 bis 210200, etc.)
-id_ranges = [
-    range(222380, 222390),  # One Piece Haupt-ID Kreis
-    range(236160, 236175),  # Starter Decks & Spezial-Kits
-    range(231550, 231560),  # Displays & Booster-Wellen
-    range(210160, 210180),  # Pokémon Blister-Kreis (inkl. 210168 Rostock-Drop)
-    range(220260, 220270),  # Tin-Boxen
-    range(229865, 229880),  # Top-Trainer-Boxen (ETBs) & Kollektionen
-    range(226780, 226795)   # Spezial-Kollektionen / Hype-Sets
-]
+# FESTE ABSICHERUNG: Die wichtigsten bekannten IDs (inkl. aller Booster & Blister) immer fest einspeisen
+HARDCODED_IDS = {
+    "222384": "One Piece TCG: Booster Pack (sortiert)",
+    "236166": "One Piece TCG: Zoro & Sanji Starter Deck (ST-12)",
+    "236167": "One Piece TCG: 3D2Y Starter Deck (ST-13)",
+    "231555": "One Piece TCG: Wings of the Captain Booster Display",
+    "210168": "Pokémon TCG: Set mit 2 Boosterpacks (Blister)",
+    "220263": "Pokémon TCG: Sanfte Alola-Vulpix Tin-Box",
+    "229871": "Pokémon TCG: Paldeas Schicksale Top-Trainer-Box (ETB)",
+    "234567": "Pokémon TCG: Aktuelles Boosterpack (Sortiert)",
+    "226789": "Pokémon TCG: Karmesin & Purpur 151 Kollektion",
+    "218432": "Pokémon TCG: Strahlende Sterne Top-Trainer-Box"
+}
 
-print("⚡ Starte API-Direktscan für alle Blister, Boxen und TCG-Artikel...")
+for prod_id, prod_name in HARDCODED_IDS.items():
+    all_discovered_products[prod_id] = prod_name
 
-for id_range in id_ranges:
-    for prod_id in id_range:
-        str_id = str(prod_id)
-        API_URL = f"https://smythstoys.com{str_id}/stock"
+# LIVE-SUCHE: Wir ziehen uns ALLES, was Smyths aktuell unter den Begriffen listet (bis zu 200 Produkte!)
+for keyword in KEYWORDS:
+    for page in range(0, 2):  # Scannt Seite 1 und Seite 2 der internen API (Gesamt 200 Ergebnisse)
+        search_url = f"https://smythstoys.com{keyword}&pageSize=100&currentPage={page}"
         try:
-            response = session.get(API_URL, headers=headers, timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Wir holen den echten Produktnamen direkt aus der API-Datenbank
-                # Das funktioniert auch dann, wenn der Artikel auf der Website versteckt ist!
-                prod_name = data.get("productName", "").strip()
-                if not prod_name:
-                    continue
+            search_res = session.get(search_url, headers=headers, timeout=12)
+            if search_res.status_code == 200:
+                search_data = search_res.json()
+                products_list = search_data.get("products", [])
+                for p in products_list:
+                    code = p.get("code")
+                    name = p.get("name", "")
+                    name_lower = name.lower()
                     
-                name_lower = prod_name.lower()
-                
-                # FILTER: Nur echte TCG-Artikel durchlassen
-                allowed = ["booster", "display", "tin", "deck", "box", "kollektion", "blister", "top-trainer", "etb", "sammelkarten", "card game"]
-                ignored = ["plüsch", "figur", "spielzeug", "puzzle", "kuscheltier", "kostüm"]
-                
-                if any(term in name_lower for term in allowed) and not any(x in name_lower for x in ignored):
-                    all_discovered_products[str_id] = prod_name
+                    # FILTER: Erfasst JEDEN Blister, Booster, Display, ETB, Tin, Box & Deck
+                    allowed = ["booster", "display", "tin", "deck", "box", "kollektion", "blister", "top-trainer", "etb", "sammelkarten", "card game"]
+                    ignored = ["plüsch", "figur", "spielzeug", "puzzle", "kuscheltier", "kostüm"]
+                    
+                    if any(term in name_lower for term in allowed) and not any(x in name_lower for x in ignored):
+                        all_discovered_products[code] = name
         except Exception:
             pass
 
-print(f"✅ Scanner-Setup abgeschlossen. Überwache dauerhaft {len(all_discovered_products)} TCG-Produkte im Express-Modus.")
+print(f"⚡ ULTRA-EXPRESS AKTIV: Überwache lückenlos {len(all_discovered_products)} TCG-Produkte.")
 
-# ==============================================================================
-# 2. SCHRITT: BUNDESWEITE LIVE-BESTANDSPRÜFUNG (ONLINE + INSTORE)
-# ==============================================================================
+# LIVE-PRÜFUNG (ONLINE + INSTORE) FÜR ALLE GEFUNDENEN PRODUKTE
 for prod_id, prod_name in all_discovered_products.items():
     API_URL = f"https://smythstoys.com{prod_id}/stock"
     try:
-        response = session.get(API_URL, headers=headers, timeout=5)
+        response = session.get(API_URL, headers=headers, timeout=6)
         if response.status_code == 200:
             data = response.json()
             price = data.get("price", {}).get("formattedValue", "N/A")
@@ -94,7 +93,7 @@ for prod_id, prod_name in all_discovered_products.items():
                 }
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-            # --- CHECK B: FILIAL-EXPRESS CHECK ---
+            # --- CHECK B: FILIAL CHECK ---
             stores = data.get("stores", [])
             for store in stores:
                 stock_level = store.get("stockLevel", 0)
