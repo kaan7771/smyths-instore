@@ -2,9 +2,9 @@ name: Smyths Monitor
 
 on:
   schedule:
-    # Entferne das '#' am Anfang der nächsten Zeile, damit es alle 5 Minuten läuft:
-     - cron: '*/5 * * * *'
-  workflow_dispatch: # Erlaubt es dir, das Skript manuell zu starten
+    # Scannt das gesamte Jahr über bedingungslos alle 5 Minuten (24/7):
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Erlaubt es dir, das Skript zusätzlich manuell zu starten
 
 jobs:
   check-stock:
@@ -26,6 +26,6 @@ jobs:
 
       - name: Run monitor
         env:
-          # Hier wird jetzt das sichere Bot-Token an dein Skript übergeben:
+          # Übergibt das sichere Bot-Token an das Skript
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
         run: python monitor.py
