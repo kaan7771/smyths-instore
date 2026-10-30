@@ -15,7 +15,7 @@ try:
     response = requests.get(PRODUCT_URL, headers=headers, timeout=15)
     
     # TEST-MODUS: Wir prüfen absichtlich auf das Wort "Spielzeug", um den Ping zu erzwingen!
-    if "Spielzeug" in response.text:
+    if "Smyths" in response.text:
         payload = {
             "content": f"🚨 **TEST-ALARM: DER MONITOR FUNKTIONIERT!** 🚨\n\nDas Produkt wurde auf Smyths Toys gescannt.\nLink: {PRODUCT_URL}"
         }
