@@ -53,7 +53,7 @@ for prod_id, prod_name in all_discovered_products.items():
             data = response.json()
             
             price = data.get("price", {}).get("formattedValue", "N/A")
-            image_url = f"https://smythstoys.com{data.get('productImage')}" if data.get("productImage") else "https://imgur.com"
+            image_url = f"https://smythstoys.com{data.get('productImage')}" if data.get('productImage') else "https://imgur.com"
             
             stores = data.get("stores", [])
             for store in stores:
@@ -102,3 +102,4 @@ for prod_id, prod_name in all_discovered_products.items():
                     
     except Exception as e:
         print(f"Fehler beim API-Check für {prod_name}: {e}")
+
