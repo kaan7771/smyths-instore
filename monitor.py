@@ -3,7 +3,7 @@ import requests
 
 DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-# DEINE FESTEN DAUER-FAVORITEN (Werden immer garantiert als Erstes gescannt)
+# 1. DEINE FESTEN FAVORITEN (Werden immer garantiert als Erstes gescannt)
 FAVORITE_IDS = {
     "222384": "One Piece TCG: Booster Pack (sortiert)",
     "236166": "One Piece TCG: Zoro & Sanji Starter Deck (ST-12)",
@@ -27,12 +27,13 @@ headers = {
 session = requests.Session()
 all_discovered_products = {}
 
-# 1. Schritt: Favoriten einspeisen
+# Favoriten einspeisen
 for fav_id, fav_name in FAVORITE_IDS.items():
     all_discovered_products[fav_id] = fav_name
 
-# 2. Schritt: Live-Katalogsuche nach neuen Artikeln
+# 2. KATALOG-SCAN NACH ALLEN WEITEREN PRODUKTEN
 for keyword in KEYWORDS:
+    # Erhöht auf 100 Ergebnisse pro Suche, um wirklich ALLES abzufangen
     search_url = f"https://smythstoys.com{keyword}&pageSize=100"
     try:
         search_res = session.get(search_url, headers=headers, timeout=12)
@@ -43,15 +44,17 @@ for keyword in KEYWORDS:
                 code = p.get("code")
                 name = p.get("name", "")
                 name_lower = name.lower()
+                
+                # Filter für Sammelkarten
                 allowed_terms = ["booster", "display", "tin", "deck", "box", "kollektion", "blister", "top-trainer", "etb", "sammelkarten"]
                 if any(term in name_lower for term in allowed_terms) and not any(x in name_lower for x in ["plüsch", "figur", "spielzeug", "puzzle"]):
                     all_discovered_products[code] = name
     except Exception:
         pass
 
-print(f"⚡ Ultra-Express-Überwachung für {len(all_discovered_products)} Produkte gestartet.")
+print(f"⚡ Ultra-Express-Überwachung für {len(all_discovered_products)} Produkte aktiv.")
 
-# 3. Schritt: DOPPELTE EXPRESS-PRÜFUNG (Online + Filialen zeitgleich) für ALLE Produkte
+# 3. DOPPELTE EXPRESS-PRÜFUNG FÜR ALLE GEFUNDENEN PRODUKTE
 for prod_id, prod_name in all_discovered_products.items():
     API_URL = f"https://smythstoys.com{prod_id}/stock"
     try:
@@ -62,7 +65,7 @@ for prod_id, prod_name in all_discovered_products.items():
             image_url = f"https://smythstoys.com{data.get('productImage')}" if data.get('productImage') else "https://imgur.com"
             product_url = f"https://smythstoys.comp/{prod_id}"
             
-            # --- CHECK A: BLITZSCHNELLER ONLINE-LAGER CHECK ---
+            # --- CHECK A: ONLINE EXPRESS CHECK (FÜR ALLE PRODUKTE) ---
             online_stock = data.get("stockLevel", 0)
             if online_stock > 0 or data.get("stockLevelStatus") == "inStock":
                 payload = {
@@ -73,7 +76,7 @@ for prod_id, prod_name in all_discovered_products.items():
                             "title": prod_name,
                             "description": "⚡ **Smyths Toys ONLINE EXPRESS RESTOCK!** ⚡",
                             "url": product_url,
-                            "color": 16711680, # Rot für Online-Drop (Sofort zuschlagen!)
+                            "color": 16711680,
                             "thumbnail": {"url": image_url},
                             "fields": [
                                 {"name": "Price", "value": price, "inline": False},
@@ -81,13 +84,13 @@ for prod_id, prod_name in all_discovered_products.items():
                                 {"name": "Stock", "value": f"{online_stock} Stück online!", "inline": True},
                                 {"name": "Links", "value": f"[Direkt bestellen]({product_url})", "inline": False}
                             ],
-                            "footer": {"text": "TCG Express Monitor • Online-Abfang-Modus"}
+                            "footer": {"text": "TCG Express Monitor"}
                         }
                     ]
                 }
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-            # --- CHECK B: BUNDESWEITER LOKALER FILIAL CHECK (Läuft zeitgleich mit!) ---
+            # --- CHECK B: FILIAL-EXPRESS-CHECK (FÜR ALLE PRODUKTE) ---
             stores = data.get("stores", [])
             for store in stores:
                 stock_level = store.get("stockLevel", 0)
@@ -108,7 +111,7 @@ for prod_id, prod_name in all_discovered_products.items():
                                 "title": prod_name,
                                 "description": "🟠 **Smyths Toys Instore Restock**",
                                 "url": product_url,
-                                "color": 16766720, # Orange für Ladenbestände vor Ort
+                                "color": 16766720,
                                 "thumbnail": {"url": image_url},
                                 "fields": [
                                     {"name": "Price", "value": price, "inline": False},
