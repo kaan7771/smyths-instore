@@ -103,3 +103,4 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
         print(f"❌ Discord-Fehler: {e}")
 
 check_smyths_stock()
+
