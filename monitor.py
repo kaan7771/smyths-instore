@@ -15,7 +15,6 @@ stock_level = 3
 full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
 maps_url = f"https://google.com+{store_name}"
 
-# Das unblockbare Premium-Design im gerahmten Code-Block
 fancy_text = (
     f"╔════════════════════════════════════════════╗\n"
     f"  **🟠 SMYTHS TOYS INSTORE RESTOCK 🟠**\n"
@@ -38,13 +37,3 @@ payload = {
 
 requests.post(DISCORD_WEBHOOK, json=payload)
 print(f"🔥 Unblockbarer Premium-Alarm für {prod_name} erfolgreich gesendet!")
-
-        "footer": {
-            "text": "TCG Alerts • Live Pings",
-            "icon_url": "https://imgur.com"
-        }
-    }]
-}
-
-requests.post(DISCORD_WEBHOOK, json=payload)
-print(f"🔥 Premium-Alarm für {prod_name} erfolgreich gesendet!")
