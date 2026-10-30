@@ -1,4 +1,4 @@
-name: Smyths Toys 5-Min Monitor
+name: Smyths Monitor
 
 on:
   schedule:
@@ -9,18 +9,19 @@ jobs:
   check-stock:
     runs-on: ubuntu-latest
     steps:
-    - name: Code auschecken
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Python installieren
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-    - name: Bibliotheken installieren
-      run: pip install requests
+      - name: Install dependencies
+        run: pip install requests
 
-    - name: Monitor ausführen
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: python monitor.py
+      - name: Run monitor
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python monitor.py
+
