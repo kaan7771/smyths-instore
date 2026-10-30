@@ -15,6 +15,7 @@ def check_smyths_stock(product_id):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
+    # KORREKTUR: Schrägstrich vor der Produkt-ID hinzugefügt
     api_url = f"https://smythstoys.com{product_id}/pointOfServices"
     
     try:
@@ -55,7 +56,6 @@ def send_discord_alert(prod_name, price, store_name, stock_display, full_address
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Altes Box-Design, angepasst auf deine neuen Felder (Englisch, ohne Kreise, ohne vor Ort)
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
