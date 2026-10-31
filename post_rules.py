@@ -56,8 +56,8 @@ async def on_ready():
             color=16753920 # Das schöne TCG-Orange
         )
         
-        # Lokale Bilddatei als Anhang hinzufügen und im Embed anzeigen
-        image_path = "rules_banner.png"
+        # JETZT KORRIGIERT: Der Bot sucht jetzt nach deiner Datei inklusive der .jfif Endung!
+        image_path = "rules_banner.png.jfif"
         if os.path.exists(image_path):
             file = File(image_path, filename="rules_banner.png")
             embed.set_image(url="attachment://rules_banner.png")
@@ -68,7 +68,7 @@ async def on_ready():
             except Exception as e:
                 print(f"Fehler beim Senden: {e}")
         else:
-            print("Fehler: 'rules_banner.png' wurde auf GitHub nicht gefunden! Sende ohne Bild...")
+            print(f"Fehler: '{image_path}' wurde auf GitHub nicht gefunden!")
             try:
                 await channel.send(embed=embed)
                 print("Regeln wurden ohne Bild gesendet.")
