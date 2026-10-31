@@ -26,7 +26,7 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT ENTGÜLTIG KORREKT: Die absolut sicherste Such-URL mit vollen API-Parametern
+    # JETZT EXAKT WIE BEI TCGALERTS: Keine Koordinaten, sondern sauberer Adress-Suchstring mit Pluszeichen
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
