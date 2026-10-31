@@ -1,3 +1,38 @@
+import os
+import json
+import urllib.parse
+from datetime import datetime
+
+DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
+STATE_FILE = "stock_state.json"
+
+# Deine feste Discord Kanal-ID
+CHANNEL_ID = 1565663068695044187
+
+# Wir löschen den alten Zustand, um einen neuen Restock zu erzwingen
+if os.path.exists(STATE_FILE):
+    try:
+        os.remove(STATE_FILE)
+        print("Alten Speicherstand gelöscht, um Restock zu erzwingen.")
+    except Exception as e:
+        print(f"Konnte State-File nicht löschen: {e}")
+
+def check_smyths_stock_SIMULATED():
+    print("Starte simulierten Smyths Stock Check...")
+    
+    prod_name = "One Piece TCG: Wings of the Captain Booster Display"
+    price = "119,99 €"
+    store_name = "Hamburg-Altona"
+    stock_display = "3 Stück"
+    full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
+    product_url = "https://smythstoys.com"
+    maps_url = f"https://google.com{urllib.parse.quote(store_name)}"
+    
+    print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
+    
+    send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
+    print("Simulierter Stock Check beendet.")
+
 def send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
     if not DISCORD_TOKEN:
         print("Fehler: Kein DISCORD_TOKEN gefunden!")
@@ -33,7 +68,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     }
     
     try:
-        # Direkte Verbindung zum Discord-Host ohne urlopen-Umweg
         conn = http.client.HTTPSConnection("discord.com")
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
@@ -41,6 +75,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         response = conn.getresponse()
         data = response.read().decode("utf-8")
         
+        # Fehler behoben: Gültige Statuscodes eingetragen
         if response.status in:
             print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
         else:
@@ -49,3 +84,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         conn.close()
     except Exception as e:
         print(f"Schwerwiegender Netzwerkfehler: {e}")
+
+# Simulation starten
+check_smyths_stock_SIMULATED()
