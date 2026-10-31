@@ -9,7 +9,6 @@ STATE_FILE = "stock_state.json"
 # Deine feste Discord Kanal-ID
 CHANNEL_ID = 1565663068695044187
 
-# Wir löschen den alten Zustand, um einen neuen Restock zu erzwingen
 if os.path.exists(STATE_FILE):
     try:
         os.remove(STATE_FILE)
@@ -23,10 +22,18 @@ def check_smyths_stock_SIMULATED():
     prod_name = "One Piece TCG: Wings of the Captain Booster Display"
     price = "119,99 €"
     store_name = "Hamburg-Altona"
-    stock_display = "3 Stück"
+    
+    # JETZT NEU: Nur noch die reine Zahl
+    stock_display = "3" 
+    
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
-    product_url = "https://smythstoys.com"
-    maps_url = f"https://google.com{urllib.parse.quote(store_name)}"
+    
+    # JETZT NEU: Korrekter Smyths Produkt-Pfad (de/de/p/...)
+    product_url = f"https://smythstoys.com"
+    
+    # JETZT NEU: Offizieller Google Maps Such-Link inklusive Filialname & Adresse
+    maps_query = urllib.parse.quote(f"Smyths Toys {store_name} {full_address}")
+    maps_url = f"https://google.com{maps_query}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     
@@ -75,7 +82,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         response = conn.getresponse()
         data = response.read().decode("utf-8")
         
-        # Zeile umgeschrieben, um Fehler durch die System-Übertragung zu vermeiden
         status_code = int(response.status)
         if status_code == 200 or status_code == 201:
             print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
@@ -88,3 +94,4 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
 
 # Simulation starten
 check_smyths_stock_SIMULATED()
+
