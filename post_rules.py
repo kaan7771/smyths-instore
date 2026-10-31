@@ -14,9 +14,12 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # Haupttext der Regeln
+        # RULES als größte Überschrift (#)
+        # Der Einleitungssatz als mittlere Überschrift (##) und fett gedruckt
+        # Der Schlusssatz als große Überschrift (#)
         rules_text = (
-            "Please follow all the rules listed below while participating in this server.\n\n"
+            "# RULES\n\n"
+            "## **Please follow all the rules listed below while participating in this server.**\n\n"
             "1. **No harassment of others**\n"
             "Racism, sexism, xenophobia, transphobia, homophobia, misogyny, etc. are not allowed.\n\n"
             "2. **Keep all discussion civil and in the correct channels**\n"
@@ -46,16 +49,15 @@ async def on_ready():
             "Community Guidelines: https://discord.com\n\n"
             "14. **Moderators hold final say**\n"
             "Listen to and respect the volunteers that keep this server running.\n\n"
-            "# React once you have understood." # Macht den Satz durch das '#' riesengroß wie RULES!
+            "# React once you have understood."
         )
         
-        # Kasten 1: Nur für das große Banner (Exakt wie bei TCGAlerts)
+        # Kasten 1: Für das Banner
         embed_image = discord.Embed(color=16753920)
         embed_image.set_image(url="attachment://rules_banner.png")
         
-        # Kasten 2: Für den Text der Regeln
+        # Kasten 2: Für den formatierten Text
         embed_text = discord.Embed(
-            title="RULES",
             description=rules_text,
             color=16753920
         )
@@ -65,9 +67,8 @@ async def on_ready():
         try:
             if os.path.exists(image_path):
                 file = File(image_path, filename="rules_banner.png")
-                # Wir senden beide Kästen zusammen in einer einzigen Nachricht ab!
                 await channel.send(file=file, embeds=[embed_image, embed_text])
-                print("Erfolg: Regeln im TCGAlerts-Stil gesendet!")
+                print("Erfolg: Regeln im angepassten TCGAlerts-Stil gesendet!")
             else:
                 print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
                 await channel.send(embed=embed_text)
