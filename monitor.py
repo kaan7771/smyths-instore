@@ -25,11 +25,11 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
     
-    # Korrekte, saubere Smyths-Produkt-URL (ohne zusätzliche Länder-Codes, die blockiert werden)
-    product_url = f"https://smythstoys.com"
+    # JETZT REPARIERT: Korrekter, direkter Produktlink inklusive "/de/de/p/" vor der ID
+    product_url = "https://smythstoys.com"
     
-    # Maps-Link extrem verkürzt (nur Name + Stadt), damit Discord ihn nicht umbricht
-    maps_query = urllib.parse.quote(f"Smyths Toys {store_name}")
+    # JETZT REPARIERT: Offizielle Google Maps Such-URL (Verhindert den Discord-Umbruch)
+    maps_query = urllib.parse.quote(f"Smyths Toys {store_name} {full_address}")
     maps_url = f"https://google.com{maps_query}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
@@ -47,16 +47,19 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Links wurden direkt oben sauber eingebettet, Zeilenabstand korrigiert
+    # Layout wieder wie vorher mit den Links separat unten
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
         f"╚════════════════════════════════════════════╝\n\n"
-        f"📝 **Product:** [{prod_name}]({product_url})\n"
+        f"📝 **Product:** `{prod_name}`\n"
         f"💰 **Price:** `{price}`\n\n"
         f"📍 **Store:** `{store_name}`\n"
         f"📦 **Stock:** `{stock_display}`\n"
-        f"🏠 **Address:** [{full_address}]({maps_url})\n\n"
+        f"🏠 **Address:** `{full_address}`\n\n"
+        f"🔗 **Links:**\n"
+        f"• [Product]({product_url})\n"
+        f"• [Google Maps Navigation]({maps_url})\n\n"
         f"────────────────────────────────────────\n"
         f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
@@ -79,7 +82,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         
         status_code = int(response.status)
         if status_code == 200 or status_code == 201:
-            print(f"Erfolg: Nachricht erfolgreich formatiert!")
+            print(f"Erfolg: Nachricht erfolgreich gesendet!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
             
