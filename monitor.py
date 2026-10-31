@@ -25,6 +25,8 @@ def check_smyths_stock_SIMULATED():
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
     
     product_url = "https://smythstoys.com"
+    
+    # JETZT UNZERSTÖRBAR: Direkter Routing-Pfad ohne jegliche Parameter (& / ?)
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
@@ -82,9 +84,8 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
-        # Fehlerhafte "in"-Abfrage umgangen:
         if status_code == 200 or status_code == 201:
-            print("Erfolg: Embed-Nachricht ohne hässliche Kästen gesendet!")
+            print("Erfolg: Embed-Nachricht gesendet!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
             
