@@ -34,13 +34,9 @@ def save_state(state):
         json.dump(state, f, indent=4)
 
 def check_smyths_stock():
-    # Authentische Browser-Header, um direkt und ungecached bei Smyths anzufragen
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
+        "Accept": "application/json"
     }
     
     current_state = load_state()
@@ -49,13 +45,16 @@ def check_smyths_stock():
     print("Starte Smyths Live Stock Check...")
 
     for prod_id in PRODUCTS:
-        # Direkter API-Pfad zu Smyths mit korrekten Slashes und Cache-Buster
+        target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
         cache_buster = int(datetime.now().timestamp())
-        api_url = f"https://smythstoys.com{prod_id}/pointOfServices?cb={cache_buster}"
+        
+        # Nutzen corsproxy.io, um die DNS-Blockade von GitHub zu umgehen
+        encoded_url = urllib.parse.quote(target_url)
+        api_url = f"https://corsproxy.io?{encoded_url}&cb={cache_buster}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
-            with urllib.request.urlopen(req, timeout=12) as response:
+            with urllib.request.urlopen(req, timeout=15) as response:
                 if response.status == 200:
                     raw_data = response.read().decode("utf-8")
                     data = json.loads(raw_data)
@@ -144,7 +143,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getcall() if hasattr(conn, "getcall") else conn.getresponse()
+        response = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
