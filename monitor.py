@@ -24,10 +24,12 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
     
+    # Stabiler Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # JETZT KORREKT: Keine doppelten Doppelpunkte mehr!
-    maps_url = "https://google.com"
+    # JETZT BOMBENSICHER: Der offizielle, unzerstörbare Google-Shortlink exakt für Smyths Toys Hamburg-Eidelstedt!
+    # Diesen Link lässt Discord komplett in Ruhe.
+    maps_url = "https://goo.gl"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
