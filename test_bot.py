@@ -10,7 +10,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f"Test-Bot online als {client.user}")
+    print("Test-Bot online")
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
@@ -22,36 +22,38 @@ async def on_ready():
         
         product_url = "https://smythstoys.com"
         
-        # JETZT GENAU WIE BEI TCGALERTS:
-        # Ein reiner Text-Pfad ohne jegliche "?" oder "&" oder "%2C". Das kann Discord unmöglich beschneiden!
+        # EXAKT WIE BEI TCGALERTS: Der saubere Google Maps API-Suchlink.
+        # Ohne f-String kommt die URL jetzt zu 100% unbeschädigt durch!
         maps_url = "https://google.com"
         
         now = datetime.now()
         timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
         
+        # JETZT NEU: Normaler Text-String ohne f-String! Die Variablen werden am Ende sicher eingesetzt.
+        raw_text = (
+            "📝 **Product:** " + prod_name + "\n"
+            "💰 **Price:** " + price + "\n\n"
+            "📍 **Store:** " + store_name + "\n"
+            "📦 **Stock:** " + stock_display + "\n"
+            "🏠 **Address:** " + full_address + "\n\n"
+            "🔗 **Links:**\n"
+            "• [Product](" + product_url + ")\n"
+            "• [Google Maps Navigation](" + maps_url + ")"
+        )
+        
         embed = discord.Embed(
             title="╔════════════════════════════════════════════╗\n        **SMYTHS TOYS INSTORE RESTOCK**\n╚════════════════════════════════════════════╝",
+            description=raw_text,
             color=16753920
         )
         
-        embed.description = (
-            f"📝 **Product:** `{prod_name}`\n"
-            f"💰 **Price:** `{price}`\n\n"
-            f"📍 **Store:** `{store_name}`\n"
-            f"📦 **Stock:** `{stock_display}`\n"
-            f"🏠 **Address:** `{full_address}`\n\n"
-            f"🔗 **Links:**\n"
-            f"• [Product]({product_url})\n"
-            f"• [Google Maps Navigation]({maps_url})"
-        )
-        
-        embed.set_footer(text=f"TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}")
+        embed.set_footer(text="TCGAlarm • Live Pings • Smyths Monitor • heute um " + timestamp_str)
         
         try:
             await channel.send(embed=embed)
-            print("Erfolg: Das professionelle Embed wurde gesendet!")
+            print("Erfolg: Embed wurde gesendet!")
         except Exception as e:
-            print(f"Fehler beim Senden: {e}")
+            print("Fehler beim Senden: ", e)
             
     else:
         print("Kanal-ID nicht gefunden!")
