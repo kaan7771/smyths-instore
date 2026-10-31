@@ -14,9 +14,10 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # Die von dir eingereichten Regeln sauber formatiert
+        # Die Regeln sauber formatiert mit großem RULES und extra Abstand unten
         rules_text = (
-            "**Please follow all the rules listed below while participating in this server.**\n\n"
+            "# RULES\n\n" # Macht das "RULES" deutlich größer
+            "Please follow all the rules listed below while participating in this server.\n\n"
             "1. **No harassment of others**\n"
             "Racism, sexism, xenophobia, transphobia, homophobia, misogyny, etc. are not allowed.\n\n"
             "2. **Keep all discussion civil and in the correct channels**\n"
@@ -45,12 +46,12 @@ async def on_ready():
             "Terms of Service: https://discordapp.com\n"
             "Community Guidelines: https://discord.com\n\n"
             "14. **Moderators hold final say**\n"
-            "Listen to and respect the volunteers that keep this server running.\n\n"
-            "**React once you have understood.**"
+            "Listen to and respect the volunteers that keep this server running.\n"
+            "\n‎\n" # Unsichtbarer Zeilenumbruch für echten Abstand
+            "**React once you have understood.**" # Fett gedruckt
         )
         
         embed = discord.Embed(
-            title="╔════════════════════════════════════════════╗\n                        **TCG ALERTS RULES**\n╚════════════════════════════════════════════╝",
             description=rules_text,
             color=16753920 # Das schöne TCG-Orange
         )
@@ -67,14 +68,14 @@ async def on_ready():
             except Exception as e:
                 print(f"Fehler beim Senden: {e}")
         else:
-            print("Fehler: 'rules_banner.png' wurde auf GitHub nicht gefunden!")
+            print("Fehler: 'rules_banner.png' wurde auf GitHub nicht gefunden! Sende ohne Bild...")
             try:
                 await channel.send(embed=embed)
-                print("Regeln wurden ohne Bild gesendet, da Datei fehlt.")
+                print("Regeln wurden ohne Bild gesendet.")
             except Exception as e:
                 print(f"Fehler beim Senden: {e}")
     else:
-        print("Kanal nicht gefunden. Prüfe die ID und ob der Bot auf dem Server ist.")
+        print("Kanal nicht gefunden. Prüfe die ID.")
         
     await client.close()
 
