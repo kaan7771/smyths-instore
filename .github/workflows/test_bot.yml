@@ -22,4 +22,4 @@ jobs:
     - name: Bot Test ausfuehren
       env:
         BOT_TOKEN: ${{ secrets.DISCORD_TOKEN }} # Nutzt dein bestehendes Secret
-      run: python test_bot.py
+      run: python post_rules.py
