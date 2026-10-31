@@ -34,9 +34,11 @@ def save_state(state):
         json.dump(state, f, indent=4)
 
 def check_smyths_stock():
+    # Optimierte Header, damit der Zielserver die Anfrage als legitimen Browser einstuft
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json"
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/json;q=0.8",
+        "Accept-Language": "de-DE,de;q=0.9"
     }
     
     current_state = load_state()
@@ -48,15 +50,20 @@ def check_smyths_stock():
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
         cache_buster = int(datetime.now().timestamp())
         
-        # Nutzen corsproxy.io, um die DNS-Blockade von GitHub zu umgehen
-        encoded_url = urllib.parse.quote(target_url)
-        api_url = f"https://corsproxy.io?{encoded_url}&cb={cache_buster}"
+        # Formatierung für corsproxy.io ohne Query-Verwirrung angepasst
+        api_url = f"https://corsproxy.io?{urllib.parse.quote(target_url)}?cb={cache_buster}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
             with urllib.request.urlopen(req, timeout=15) as response:
                 if response.status == 200:
                     raw_data = response.read().decode("utf-8")
+                    
+                    # Überprüfung, ob die Antwort überhaupt JSON ist
+                    if not raw_data.strip().startswith("{"):
+                        print(f"Proxy-Fehler bei Produkt {prod_id}. Server antwortete mit: {raw_data[:100]}")
+                        continue
+                        
                     data = json.loads(raw_data)
                     
                     if "pointOfServices" not in data:
@@ -143,7 +150,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getresponse()
+        response = conn.getcall() if hasattr(conn, "getcall") else conn.getcall() if hasattr(conn, "getcall") else conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
