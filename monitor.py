@@ -1,7 +1,6 @@
 import os
 import json
 import urllib.parse
-import urllib.request
 from datetime import datetime
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
@@ -17,15 +16,6 @@ if os.path.exists(STATE_FILE):
     except Exception as e:
         print(f"Konnte State-File nicht löschen: {e}")
 
-def shorten_url(long_url):
-    try:
-        api_url = f"http://tinyurl.com{urllib.parse.quote(long_url)}"
-        with urllib.request.urlopen(api_url, timeout=5) as response:
-            return response.read().decode("utf-8")
-    except Exception as e:
-        print(f"Fehler beim Link-Kürzen: {e}")
-        return long_url # Fallback falls TinyURL down ist
-
 def check_smyths_stock_SIMULATED():
     print("Starte simulierten Smyths Stock Check...")
     
@@ -35,15 +25,12 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
     
-    # Lange URLs generieren
-    long_product_url = "https://smythstoys.com"
-    maps_query = urllib.parse.quote(f"Smyths Toys, {store_name}, {full_address}")
-    long_maps_url = f"https://google.com{maps_query}"
+    # Korrekte, saubere Smyths-Produkt-URL (ohne zusätzliche Länder-Codes, die blockiert werden)
+    product_url = f"https://smythstoys.com"
     
-    # JETZT NEU: Links radikal verkürzen um Zeilenumbrüche in Discord zu verhindern
-    print("Kürze Links für Discord...")
-    product_url = shorten_url(long_product_url)
-    maps_url = shorten_url(long_maps_url)
+    # Maps-Link extrem verkürzt (nur Name + Stadt), damit Discord ihn nicht umbricht
+    maps_query = urllib.parse.quote(f"Smyths Toys {store_name}")
+    maps_url = f"https://google.com{maps_query}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     
@@ -60,18 +47,16 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
+    # Links wurden direkt oben sauber eingebettet, Zeilenabstand korrigiert
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
         f"╚════════════════════════════════════════════╝\n\n"
-        f"📝 **Product:** `{prod_name}`\n"
+        f"📝 **Product:** [{prod_name}]({product_url})\n"
         f"💰 **Price:** `{price}`\n\n"
         f"📍 **Store:** `{store_name}`\n"
         f"📦 **Stock:** `{stock_display}`\n"
-        f"🏠 **Address:** `{full_address}`\n\n"
-        f"🔗 **Links:**\n"
-        f"• [Product]({product_url})\n"
-        f"• [Google Maps Navigation]({maps_url})\n\n"
+        f"🏠 **Address:** [{full_address}]({maps_url})\n\n"
         f"────────────────────────────────────────\n"
         f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
@@ -94,7 +79,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         
         status_code = int(response.status)
         if status_code == 200 or status_code == 201:
-            print(f"Erfolg: Künstliche Nachricht mit kurzen Links gesendet!")
+            print(f"Erfolg: Nachricht erfolgreich formatiert!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
             
