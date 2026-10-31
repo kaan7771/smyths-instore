@@ -1,6 +1,5 @@
 import os
 import json
-import urllib.parse
 from datetime import datetime
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
@@ -28,9 +27,9 @@ def check_smyths_stock_SIMULATED():
     # Korrekter Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # Absolut saubere Google Maps Such-URL ohne Formatierungsfehler
-    maps_query = urllib.parse.quote(f"Smyths Toys {store_name} {full_address}")
-    maps_url = f"https://google.com{maps_query}"
+    # JETZT WIE TCGALERT: Perfekter Maps-Link mit den exakten Koordinaten für Hamburg-Altona
+    # Keine Sonderzeichen, keine Leerzeichen -> Discord bricht diesen Link niemals um!
+    maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     
@@ -47,7 +46,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Layout mit funktionierenden, separat aufgelisteten Links
+    # Das Layout mit den sauberen Links am Ende
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
