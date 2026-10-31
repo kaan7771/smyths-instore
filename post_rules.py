@@ -50,26 +50,28 @@ async def on_ready():
             "**React once you have understood.**"
         )
         
+        # Erstellt den Kasten mit dem farbigen linken Rand (TCG-Orange/Gelb)
         embed = discord.Embed(
             description=rules_text,
-            color=16753920 # TCG-Orange
+            color=16753920 
         )
         
         image_path = "rules_banner.png.jfif"
         
         try:
             if os.path.exists(image_path):
-                # 1. Bild zuerst hochladen und senden (steht dann ganz oben)
-                file = File(image_path, filename="rules_banner.png")
-                await channel.send(file=file)
-                print("Bild erfolgreich als Header gesendet!")
+                # Weist das Bild als Anhang zu
+                file = File(image_path, filename="rules_logo.png")
+                # JETZT NEU: set_thumbnail packt das Bild kompakt oben rechts IN den Kasten!
+                embed.set_thumbnail(url="attachment://rules_logo.png")
+                
+                # Sendet das Bild eingebunden im Kasten ab
+                await channel.send(file=file, embed=embed)
+                print("Erfolg: Regeln mit kompaktem Logo im Kasten wurden gesendet!")
             else:
-                print(f"Hinweis: '{image_path}' wurde nicht gefunden.")
-
-            # 2. Direkt danach den gelben Regel-Kasten senden
-            await channel.send(embed=embed)
-            print("Erfolg: Regeln wurden direkt darunter gepostet!")
-            
+                print(f"Hinweis: '{image_path}' wurde nicht gefunden. Sende nur Kasten...")
+                await channel.send(embed=embed)
+                
         except Exception as e:
             print(f"Fehler beim Senden: {e}")
     else:
