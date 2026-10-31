@@ -47,9 +47,10 @@ def check_smyths_stock():
     print("Starte Smyths Live Stock Check...")
 
     for prod_id in PRODUCTS:
+        # KORREKTUR: Korrekte Domain und Slashes für den Smyths API-Pfad gesetzt
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
         cache_buster = int(datetime.now().timestamp())
-        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}?cb={cache_buster}"
+        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}&cb={cache_buster}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
