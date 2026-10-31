@@ -14,7 +14,6 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # RULES bleibt maximal groß (#), aber ohne den Trennstrich darunter
         rules_text = (
             "# RULES\n\n"
             "### **Please follow all the rules listed below while participating in this server.**\n"
@@ -51,12 +50,8 @@ async def on_ready():
             "# React once you have understood."
         )
         
-        # Kasten 1: Das flache Banner
-        embed_image = discord.Embed(title="‎", color=16753920)
-        embed_image.set_image(url="attachment://rules_banner.png")
-        
-        # Kasten 2: Für den formatierten Text
-        embed_text = discord.Embed(
+        # Ein einziges, sauberes Embed (Kein doppelter Kasten, kein leerer Titel-Balken mehr!)
+        embed = discord.Embed(
             description=rules_text,
             color=16753920
         )
@@ -66,11 +61,13 @@ async def on_ready():
         try:
             if os.path.exists(image_path):
                 file = File(image_path, filename="rules_banner.png")
-                await channel.send(file=file, embeds=[embed_image, embed_text])
-                print("Erfolg: Regeln ohne Trennstrich gesendet!")
+                # Das Bild wird jetzt direkt unten im selben Kasten angezeigt
+                embed.set_image(url="attachment://rules_banner.png")
+                await channel.send(file=file, embed=embed)
+                print("Erfolg: Regeln in einem einzigen Kasten ohne leere Balken gesendet!")
             else:
                 print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
-                await channel.send(embed=embed_text)
+                await channel.send(embed=embed)
                 
         except Exception as e:
             print(f"Fehler beim Senden: {e}")
