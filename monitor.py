@@ -23,16 +23,16 @@ def check_smyths_stock_SIMULATED():
     price = "119,99 €"
     store_name = "Hamburg-Altona"
     
-    # JETZT NEU: Nur noch die reine Zahl
+    # Der Haken ist weg, nur noch die reine Zahl
     stock_display = "3" 
     
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
     
-    # JETZT NEU: Korrekter Smyths Produkt-Pfad (de/de/p/...)
-    product_url = f"https://smythstoys.com"
+    # Exakter, direkter Produkt-Link für den deutschen Smyths-Shop
+    product_url = "https://smythstoys.com"
     
-    # JETZT NEU: Offizieller Google Maps Such-Link inklusive Filialname & Adresse
-    maps_query = urllib.parse.quote(f"Smyths Toys {store_name} {full_address}")
+    # Google Maps URL exakt formatiert (WICHTIG: Das Fragezeichen und die Parameter müssen stimmen)
+    maps_query = urllib.parse.quote(f"Smyths Toys, {store_name}, {full_address}")
     maps_url = f"https://google.com{maps_query}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
@@ -50,6 +50,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
+    # Der grüne Haken wurde hier aus der Zeile entfernt
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
@@ -57,7 +58,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         f"📝 **Product:** `{prod_name}`\n"
         f"💰 **Price:** `{price}`\n\n"
         f"📍 **Store:** `{store_name}`\n"
-        f"📦 **Stock:** `{stock_display} ✅`\n"
+        f"📦 **Stock:** `{stock_display}`\n"
         f"🏠 **Address:** `{full_address}`\n\n"
         f"🔗 **Links:**\n"
         f"• [Product]({product_url})\n"
@@ -94,4 +95,3 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
 
 # Simulation starten
 check_smyths_stock_SIMULATED()
-
