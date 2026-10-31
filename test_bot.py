@@ -22,14 +22,14 @@ async def on_ready():
         
         product_url = "https://smythstoys.com"
         
-        # EXAKT WIE BEI TCGALERTS: Der saubere Google Maps API-Suchlink.
-        # Ohne f-String kommt die URL jetzt zu 100% unbeschädigt durch!
-        maps_url = "https://google.com"
+        # JETZT BOMBENSICHER: Der offizielle, unzerstörbare Google-Shortlink exakt für Smyths Toys Hamburg-Eidelstedt!
+        # Diesen Link lässt Discord komplett in Ruhe und er öffnet direkt die App.
+        maps_url = "https://goo.gl"
         
         now = datetime.now()
         timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
         
-        # JETZT NEU: Normaler Text-String ohne f-String! Die Variablen werden am Ende sicher eingesetzt.
+        # Sicherer Zusammenbau ohne f-String Fehler
         raw_text = (
             "📝 **Product:** " + prod_name + "\n"
             "💰 **Price:** " + price + "\n\n"
@@ -51,7 +51,7 @@ async def on_ready():
         
         try:
             await channel.send(embed=embed)
-            print("Erfolg: Embed wurde gesendet!")
+            print("Erfolg: Embed mit Google Shortlink wurde gesendet!")
         except Exception as e:
             print("Fehler beim Senden: ", e)
             
