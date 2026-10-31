@@ -27,8 +27,7 @@ def check_smyths_stock_SIMULATED():
     # Korrekter Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # JETZT WIE TCGALERT: Perfekter Maps-Link mit den exakten Koordinaten für Hamburg-Altona
-    # Keine Sonderzeichen, keine Leerzeichen -> Discord bricht diesen Link niemals um!
+    # JETZT PERFEKT: Exakte Platz-Koordinaten-Struktur für Hamburg-Altona
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
@@ -46,7 +45,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Das Layout mit den sauberen Links am Ende
+    # HINWEIS: Die spitzen Klammern um die URLs <link> verhindern die hässliche Google-Vorschau in Discord
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
@@ -57,8 +56,8 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         f"📦 **Stock:** `{stock_display}`\n"
         f"🏠 **Address:** `{full_address}`\n\n"
         f"🔗 **Links:**\n"
-        f"• [Product]({product_url})\n"
-        f"• [Google Maps Navigation]({maps_url})\n\n"
+        f"• [Product](<{product_url}>)\n"
+        f"• [Google Maps Navigation](<{maps_url}>)\n\n"
         f"────────────────────────────────────────\n"
         f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
