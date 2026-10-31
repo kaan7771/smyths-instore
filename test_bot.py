@@ -1,32 +1,66 @@
 import os
 import discord
+from datetime import datetime
+
+# Deine bereits hinterlegte Kanal-ID
+CHANNEL_ID = 1565663068695044187
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
-
 @client.event
 async def on_ready():
-    print("Bot ist online auf GitHub Actions")
-
-    # WICHTIG: Ersetze die Nullen hier mit deiner echten Discord-Kanal-ID!
-    channel_id = 1565663068695044187
-    channel = client.get_channel(channel_id)
-
+    print(f"Test-Bot online als {client.user}")
+    channel = client.get_channel(CHANNEL_ID)
+    
     if channel:
+        prod_name = "One Piece TCG: Wings of the Captain Booster Display"
+        price = "119,99 €"
+        store_name = "Hamburg-Eidelstedt"
+        stock_display = "3" 
+        full_address = "Hörgensweg 5, 22523 Eimsbüttel"
+        
+        product_url = "https://smythstoys.com"
+        
+        # EXAKT WIE BEI TCGALERTS: Der voll-codierte Koordinaten-Link
+        # discord.py sorgt dafür, dass dieser Link unbeschädigt bei Discord ankommt!
+        maps_url = "https://google.com"
+        
+        now = datetime.now()
+        timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
+        
+        # Wir bauen das schicke Kasten-Design (Embed) direkt über discord.py auf
+        embed = discord.Embed(
+            title="╔════════════════════════════════════════════╗\n        **SMYTHS TOYS INSTORE RESTOCK**\n╚════════════════════════════════════════════╝",
+            color=16753920 # Das schöne Orange
+        )
+        
+        embed.description = (
+            f"📝 **Product:** `{prod_name}`\n"
+            f"💰 **Price:** `{price}`\n\n"
+            f"📍 **Store:** `{store_name}`\n"
+            f"📦 **Stock:** `{stock_display}`\n"
+            f"🏠 **Address:** `{full_address}`\n\n"
+            f"🔗 **Links:**\n"
+            f"• [Product]({product_url})\n"
+            f"• [Google Maps Navigation]({maps_url})"
+        )
+        
+        embed.set_footer(text=f"TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}")
+        
         try:
-            await channel.send("Hallo Welt von GitHub")
-            print("Nachricht erfolgreich gesendet!")
+            await channel.send(embed=embed)
+            print("Erfolg: Das professionelle Embed wurde gesendet!")
         except discord.Forbidden:
-            print("Fehler: Keine Rechte in diesem Kanal!")
-        except discord.HTTPException as e:
-            print(f"Discord-Fehler: {e}")
+            print("Fehler: Der Bot darf keine Embeds in diesen Kanal senden!")
+        except Exception as e:
+            print(f"Fehler beim Senden: {e}")
+            
     else:
-        print("Kanal nicht gefunden!")
-
-    # Schließt den Bot, damit der GitHub-Workflow fertig wird
+        print("Kanal-ID nicht gefunden!")
+        
     await client.close()
 
-
+# Holt sich das Secret 'DISCORD_TOKEN', das du ganz am Anfang hinterlegt hast
 token = os.getenv("BOT_TOKEN")
 client.run(token)
