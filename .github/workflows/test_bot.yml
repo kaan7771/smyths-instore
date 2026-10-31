@@ -1,7 +1,7 @@
 name: Test Discord Bot
 
 on:
-  workflow_dispatch: # Macht den Start-Button sichtbar
+  workflow_dispatch: # Aktiviert den Start-Button
 
 jobs:
   run-bot:
@@ -21,5 +21,5 @@ jobs:
 
     - name: Bot Test ausfuehren
       env:
-        BOT_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        BOT_TOKEN: ${{ secrets.DISCORD_TOKEN }} # Nutzt dein bestehendes Secret
       run: python test_bot.py
