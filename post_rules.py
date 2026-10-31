@@ -50,10 +50,15 @@ async def on_ready():
             "# React once you have understood."
         )
         
-        # Der gelbe Kasten für den Regel-Text
+        # Kasten 1: NUR für das Bild (erzeugt die gelbe Linie links daneben)
+        # Komplett ohne 'title', um den leeren Balken darüber zu löschen!
+        embed_image = discord.Embed(color=16753920)
+        embed_image.set_image(url="attachment://rules_banner.png")
+        
+        # Kasten 2: Für den perfekt formatierten Regel-Text
         embed_text = discord.Embed(
             description=rules_text,
-            color=16753920 # TCG-Orange
+            color=16753920
         )
         
         image_path = "rules_banner.png.jfif"
@@ -61,10 +66,9 @@ async def on_ready():
         try:
             if os.path.exists(image_path):
                 file = File(image_path, filename="rules_banner.png")
-                # JETZT BOMBENSICHER: Das Bild wird als reine Datei OHNE Embed gesendet. 
-                # Der gelbe Text-Kasten wird als Anhang direkt an dieselbe Nachricht gehängt.
-                await channel.send(file=file, embed=embed_text)
-                print("Erfolg: Regeln absolut fehlerfrei im TCGAlerts-Stil gepostet!")
+                # Sendet beide gelben Kästen nahtlos zusammen ab
+                await channel.send(file=file, embeds=[embed_image, embed_text])
+                print("Erfolg: Regeln mit gelber Linie am Bild gesendet!")
             else:
                 print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
                 await channel.send(embed=embed_text)
