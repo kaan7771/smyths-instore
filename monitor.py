@@ -75,8 +75,9 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         response = conn.getresponse()
         data = response.read().decode("utf-8")
         
-        # Liste korrekt ausgefüllt
-        if response.status in:
+        # Zeile umgeschrieben, um Fehler durch die System-Übertragung zu vermeiden
+        status_code = int(response.status)
+        if status_code == 200 or status_code == 201:
             print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
