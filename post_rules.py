@@ -1,7 +1,6 @@
 import os
 import discord
 from discord import File
-from datetime import datetime
 
 # Deine übergebene Rules-Kanal-ID
 CHANNEL_ID = 1565372653425008965
@@ -15,9 +14,6 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # RULES als große Überschrift (#)
-        # Please follow als mittlere Überschrift (###)
-        # \n‎\n für den perfekten extra Abstand vor Regel 1
         rules_text = (
             "# RULES\n\n"
             "### **Please follow all the rules listed below while participating in this server.**\n"
@@ -54,7 +50,8 @@ async def on_ready():
             "# React once you have understood."
         )
         
-        embed = discord.Embed(
+        # Der gelbe Kasten für den Regel-Text
+        embed_text = discord.Embed(
             description=rules_text,
             color=16753920 # TCG-Orange
         )
@@ -63,17 +60,15 @@ async def on_ready():
         
         try:
             if os.path.exists(image_path):
-                # 1. Das Bild wird als saubere, eigene Nachricht zuerst gesendet (ohne Kasten/Balken-Fehler)
                 file = File(image_path, filename="rules_banner.png")
-                await channel.send(file=file)
-                print("Bild erfolgreich als sauberer Header oben gesendet!")
+                # JETZT BOMBENSICHER: Das Bild wird als reine Datei OHNE Embed gesendet. 
+                # Der gelbe Text-Kasten wird als Anhang direkt an dieselbe Nachricht gehängt.
+                await channel.send(file=file, embed=embed_text)
+                print("Erfolg: Regeln absolut fehlerfrei im TCGAlerts-Stil gepostet!")
             else:
-                print(f"Hinweis: '{image_path}' wurde nicht gefunden.")
-
-            # 2. Direkt danach wird der perfekt formatierte Text-Kasten gesendet
-            await channel.send(embed=embed)
-            print("Erfolg: Regeln wurden sauber gepostet!")
-            
+                print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
+                await channel.send(embed=embed_text)
+                
         except Exception as e:
             print(f"Fehler beim Senden: {e}")
     else:
