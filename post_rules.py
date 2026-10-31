@@ -14,9 +14,8 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # Die Regeln sauber formatiert mit großem RULES und extra Abstand unten
         rules_text = (
-            "# RULES\n\n" # Macht das "RULES" deutlich größer
+            "# RULES\n\n"
             "Please follow all the rules listed below while participating in this server.\n\n"
             "1. **No harassment of others**\n"
             "Racism, sexism, xenophobia, transphobia, homophobia, misogyny, etc. are not allowed.\n\n"
@@ -47,33 +46,32 @@ async def on_ready():
             "Community Guidelines: https://discord.com\n\n"
             "14. **Moderators hold final say**\n"
             "Listen to and respect the volunteers that keep this server running.\n"
-            "\n‎\n" # Unsichtbarer Zeilenumbruch für echten Abstand
-            "**React once you have understood.**" # Fett gedruckt
+            "\n‎\n"
+            "**React once you have understood.**"
         )
         
         embed = discord.Embed(
             description=rules_text,
-            color=16753920 # Das schöne TCG-Orange
+            color=16753920 # TCG-Orange
         )
         
-        # JETZT KORRIGIERT: Der Bot sucht jetzt nach deiner Datei inklusive der .jfif Endung!
         image_path = "rules_banner.png.jfif"
-        if os.path.exists(image_path):
-            file = File(image_path, filename="rules_banner.png")
-            embed.set_image(url="attachment://rules_banner.png")
+        
+        try:
+            if os.path.exists(image_path):
+                # 1. Bild zuerst hochladen und senden (steht dann ganz oben)
+                file = File(image_path, filename="rules_banner.png")
+                await channel.send(file=file)
+                print("Bild erfolgreich als Header gesendet!")
+            else:
+                print(f"Hinweis: '{image_path}' wurde nicht gefunden.")
+
+            # 2. Direkt danach den gelben Regel-Kasten senden
+            await channel.send(embed=embed)
+            print("Erfolg: Regeln wurden direkt darunter gepostet!")
             
-            try:
-                await channel.send(file=file, embed=embed)
-                print("Erfolg: Regeln mit Banner wurden in Discord gepostet!")
-            except Exception as e:
-                print(f"Fehler beim Senden: {e}")
-        else:
-            print(f"Fehler: '{image_path}' wurde auf GitHub nicht gefunden!")
-            try:
-                await channel.send(embed=embed)
-                print("Regeln wurden ohne Bild gesendet.")
-            except Exception as e:
-                print(f"Fehler beim Senden: {e}")
+        except Exception as e:
+            print(f"Fehler beim Senden: {e}")
     else:
         print("Kanal nicht gefunden. Prüfe die ID.")
         
