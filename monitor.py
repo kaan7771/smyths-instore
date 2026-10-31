@@ -1,6 +1,7 @@
 import os
 import json
 import urllib.parse
+import urllib.request
 from datetime import datetime
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
@@ -16,24 +17,33 @@ if os.path.exists(STATE_FILE):
     except Exception as e:
         print(f"Konnte State-File nicht löschen: {e}")
 
+def shorten_url(long_url):
+    try:
+        api_url = f"http://tinyurl.com{urllib.parse.quote(long_url)}"
+        with urllib.request.urlopen(api_url, timeout=5) as response:
+            return response.read().decode("utf-8")
+    except Exception as e:
+        print(f"Fehler beim Link-Kürzen: {e}")
+        return long_url # Fallback falls TinyURL down ist
+
 def check_smyths_stock_SIMULATED():
     print("Starte simulierten Smyths Stock Check...")
     
     prod_name = "One Piece TCG: Wings of the Captain Booster Display"
     price = "119,99 €"
     store_name = "Hamburg-Altona"
-    
-    # Der Haken ist weg, nur noch die reine Zahl
     stock_display = "3" 
-    
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
     
-    # Exakter, direkter Produkt-Link für den deutschen Smyths-Shop
-    product_url = "https://smythstoys.com"
-    
-    # Google Maps URL exakt formatiert (WICHTIG: Das Fragezeichen und die Parameter müssen stimmen)
+    # Lange URLs generieren
+    long_product_url = "https://smythstoys.com"
     maps_query = urllib.parse.quote(f"Smyths Toys, {store_name}, {full_address}")
-    maps_url = f"https://google.com{maps_query}"
+    long_maps_url = f"https://google.com{maps_query}"
+    
+    # JETZT NEU: Links radikal verkürzen um Zeilenumbrüche in Discord zu verhindern
+    print("Kürze Links für Discord...")
+    product_url = shorten_url(long_product_url)
+    maps_url = shorten_url(long_maps_url)
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     
@@ -50,7 +60,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Der grüne Haken wurde hier aus der Zeile entfernt
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
@@ -85,7 +94,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         
         status_code = int(response.status)
         if status_code == 200 or status_code == 201:
-            print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
+            print(f"Erfolg: Künstliche Nachricht mit kurzen Links gesendet!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
             
