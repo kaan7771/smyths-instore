@@ -1,0 +1,25 @@
+name: Test Discord Bot
+
+on:
+  workflow_dispatch: # Macht den Start-Button sichtbar
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Code auschecken
+      uses: actions/checkout@v4
+
+    - name: Python einrichten
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Discord Bibliothek installieren
+      run: pip install discord.py
+
+    - name: Bot Test ausfuehren
+      env:
+        BOT_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      run: python test_bot.py
