@@ -1,50 +1,10 @@
-import os
-import json
-import urllib.request
-import urllib.parse
-from datetime import datetime
-import urllib.error
-
-DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
-STATE_FILE = "stock_state.json"
-
-# Deine feste Discord Kanal-ID
-CHANNEL_ID = 1565663068695044187
-
-# Wir löschen den alten Zustand, um einen neuen Restock zu erzwingen
-if os.path.exists(STATE_FILE):
-    try:
-        os.remove(STATE_FILE)
-        print("Alten Speicherstand gelöscht, um Restock zu erzwingen.")
-    except Exception as e:
-        print(f"Konnte State-File nicht löschen: {e}")
-
-PRODUCTS = ["231555"] # Für den schnellen Test reicht ein Produkt
-
-def check_smyths_stock_SIMULATED():
-    print("Starte simulierten Smyths Stock Check...")
-    
-    # --- KÜNSTLICHER RESTOCK-DATENSATZ ---
-    prod_name = "One Piece TCG: Wings of the Captain Booster Display"
-    price = "119,99 €"
-    store_name = "Hamburg-Altona"
-    stock_display = "3 Stück"
-    full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
-    product_url = "https://smythstoys.com"
-    maps_url = f"https://google.com{urllib.parse.quote(store_name)}"
-    
-    print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
-    
-    # Sendet die Nachricht sofort ab
-    send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
-    print("Simulierter Stock Check beendet.")
-
 def send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url):
     if not DISCORD_TOKEN:
-        print("Fehler: Kein DISCORD_TOKEN in den GitHub Umgebungs-Variablen gefunden!")
+        print("Fehler: Kein DISCORD_TOKEN gefunden!")
         return
         
-    api_url = f"https://discord.com{CHANNEL_ID}/messages"
+    import http.client
+    
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
@@ -64,7 +24,8 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         f"*TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}*"
     )
     
-    payload = json.dumps({"content": fancy_text}).encode("utf-8")
+    payload = json.dumps({"content": fancy_text})
+    
     headers = {
         "Authorization": f"Bot {DISCORD_TOKEN.strip()}",
         "Content-Type": "application/json",
@@ -72,13 +33,19 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     }
     
     try:
-        req = urllib.request.Request(api_url, data=payload, headers=headers)
-        with urllib.request.urlopen(req) as res:
-            print(f"Erfolg: Künstliche Nachricht für '{prod_name}' an Discord gesendet!")
-    except urllib.error.HTTPError as e:
-        print(f"Discord API Fehler ({e.code}): {e.read().decode('utf-8')}")
+        # Direkte Verbindung zum Discord-Host ohne urlopen-Umweg
+        conn = http.client.HTTPSConnection("discord.com")
+        path = f"/api/v10/channels/{CHANNEL_ID}/messages"
+        
+        conn.request("POST", path, body=payload, headers=headers)
+        response = conn.getresponse()
+        data = response.read().decode("utf-8")
+        
+        if response.status in:
+            print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
+        else:
+            print(f"Discord API Fehler ({response.status}): {data}")
+            
+        conn.close()
     except Exception as e:
-        print(f"Allgemeiner Fehler beim Senden an Discord: {e}")
-
-# Simulation starten
-check_smyths_stock_SIMULATED()
+        print(f"Schwerwiegender Netzwerkfehler: {e}")
