@@ -22,7 +22,8 @@ async def on_ready():
         
         product_url = "https://smythstoys.com"
         
-        # JETZT PERFEKT: Unzerstörbarer Direktlink zu den Koordinaten
+        # JETZT GENAU WIE BEI TCGALERTS:
+        # Ein reiner Text-Pfad ohne jegliche "?" oder "&" oder "%2C". Das kann Discord unmöglich beschneiden!
         maps_url = "https://google.com"
         
         now = datetime.now()
