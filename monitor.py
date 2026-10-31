@@ -21,7 +21,7 @@ def check_smyths_stock_SIMULATED():
     prod_name = "One Piece TCG: Wings of the Captain Booster Display"
     price = "119,99 €"
     
-    # Neue echte Daten für Hamburg-Eidelstedt
+    # Daten für Hamburg-Eidelstedt
     store_name = "Hamburg-Eidelstedt"
     stock_display = "3" 
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
@@ -29,7 +29,7 @@ def check_smyths_stock_SIMULATED():
     # Korrekter Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # Echte, funktionierende Koordinaten-URL exakt für den Hörgensweg 5
+    # JETZT NEU: Unzerstörbarer Navigations-Link ohne Sonderzeichen zu den exakten Koordinaten
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
@@ -47,7 +47,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Die Links werden getrennt vorbereitet, um Verwirrung beim Python-Parsing zu verhindern
     link_product = f"[Product](<{product_url}>)"
     link_maps = f"[Google Maps Navigation](<{maps_url}>)"
     
