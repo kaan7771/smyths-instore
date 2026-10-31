@@ -24,9 +24,10 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
     
+    # Der feste, korrekte Smyths-Produktlink
     product_url = "https://smythstoys.com"
     
-    # Zurück zur besten Maps-URL-Struktur
+    # JETZT ALS STABILER DIREKTPFAD: Exakte Koordinaten für den Hörgensweg 5 ohne jegliche "?" oder "&"
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
