@@ -1,6 +1,5 @@
 import os
 import json
-import urllib.parse
 from datetime import datetime
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
@@ -27,9 +26,8 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT REPARIERT: Schrägstrich ergänzt und die komplette URL sauber codiert
-    query_string = urllib.parse.quote("Smyths Toys Hamburg-Eidelstedt Hörgensweg 5 22523")
-    maps_url = f"https://google.com{query_string}"
+    # JETZT ALS REINER FESTER STRING: Absolut fehlerfrei vordefiniert mit Schrägstrich und sauberer Codierung!
+    maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
@@ -45,6 +43,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
+    # Text-Zusammensetzung ohne dynamische Variablen-Verschachtelung bei den Links
     embed_description = (
         f"📝 **Product:** `{prod_name}`\n"
         f"💰 **Price:** `{price}`\n\n"
@@ -82,7 +81,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getresponse()
+        response = conn.getcall = conn.getcall = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
