@@ -1,5 +1,6 @@
 import os
 import json
+import urllib.parse
 from datetime import datetime
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
@@ -24,12 +25,12 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
     
-    # Stabiler Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # JETZT BOMBENSICHER: Der offizielle, unzerstörbare Google-Shortlink exakt für Smyths Toys Hamburg-Eidelstedt!
-    # Diesen Link lässt Discord komplett in Ruhe.
-    maps_url = "https://goo.gl"
+    # Sicher codierter Maps-Link, den Discord nicht mehr abschneiden kann
+    base_maps = "https://google.com"
+    query_param = urllib.parse.quote("Smyths Toys Hamburg-Eidelstedt Hoergensweg 5")
+    maps_url = f"{base_maps}{query_param}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
@@ -82,7 +83,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getresponse()
+        response = conn.getcall = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
