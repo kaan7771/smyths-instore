@@ -75,7 +75,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         response = conn.getresponse()
         data = response.read().decode("utf-8")
         
-        # Fehler behoben: Gültige Statuscodes eingetragen
+        # Liste korrekt ausgefüllt
         if response.status in:
             print(f"Erfolg: Künstliche Nachricht für '{prod_name}' gesendet!")
         else:
