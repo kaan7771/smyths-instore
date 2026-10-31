@@ -22,9 +22,8 @@ async def on_ready():
         
         product_url = "https://smythstoys.com"
         
-        # JETZT ABSOLUT BLOCKIERFREI: Über den Google-eigenen Redirect getarnt
-        # Discord fasst diese URL-Struktur beim Weiterleiten nicht an!
-        maps_url = "https://google.de"
+        # JETZT PERFEKT: Unzerstörbarer Direktlink zu den Koordinaten
+        maps_url = "https://google.com"
         
         now = datetime.now()
         timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
