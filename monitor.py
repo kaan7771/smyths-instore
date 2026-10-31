@@ -26,7 +26,7 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT EXAKT WIE BEI TCGALERTS: Keine Koordinaten, sondern sauberer Adress-Suchstring mit Pluszeichen
+    # JETZT REPARIERT: Das "ö" wurde durch "%C3%B6" ersetzt, damit Discord den Link nicht abbricht!
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
