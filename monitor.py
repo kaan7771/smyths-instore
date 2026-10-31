@@ -35,8 +35,11 @@ def save_state(state):
         json.dump(state, f, indent=4)
 
 def check_smyths_stock():
+    # Cache-Busting Header hinzugefügt, um Verzögerungen im Vergleich zu TCGAlert zu minimieren
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
     }
     
     current_state = load_state()
@@ -46,7 +49,9 @@ def check_smyths_stock():
 
     for prod_id in PRODUCTS:
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
-        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}"
+        # Nutzen einen zufälligen Zeitstempel-Parameter, um den AllOrigins-Cache zu umgehen
+        cache_buster = int(datetime.now().timestamp())
+        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}?cb={cache_buster}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
@@ -71,16 +76,15 @@ def check_smyths_stock():
                         is_in_stock = stock_level > 0 or stock_status == "inStock"
                         state_key = f"{prod_id}_{store_name}"
                         
-                        # Speichere aktuellen Zustand
+                        # Zustand für den Speichervorgang vorbereiten
                         new_state[state_key] = is_in_stock
                         
-                        # Nur benachrichtigen, wenn es VORHER NICHT im Stock war, aber JETZT ist
+                        # KORREKTUR: Zuerst prüfen, ob es im alten Speicherstand als FALSE markiert war
                         was_in_stock = current_state.get(state_key, False)
                         
                         if is_in_stock and not was_in_stock:
                             print(f"Echter Restock gefunden: {prod_name} in {store_name}!")
                             
-                            # Nur die Zahl extrahieren
                             if stock_level >= 15:
                                 stock_display = "15"
                             else:
@@ -88,8 +92,6 @@ def check_smyths_stock():
                             
                             address_data = store.get("address", {})
                             full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
-                            
-                            # Sauberer Produkt-Link
                             product_url = f"https://smythstoys.com{prod_id}"
                             
                             send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url)
@@ -97,7 +99,7 @@ def check_smyths_stock():
         except Exception as e:
             continue
 
-    # Zustand speichern
+    # Zustand für den nächsten Durchlauf einfrieren
     save_state(new_state)
     print("Smyths Live Stock Check beendet.")
 
@@ -111,7 +113,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Text-Beschreibung ohne Maps-Link
     embed_description = (
         "📝 **Product:** `" + prod_name + "`\n"
         "💰 **Price:** `" + price + "`\n\n"
@@ -122,7 +123,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         "• [Product](" + product_url + ")"
     )
     
-    # Der professionelle gelbe Kasten (Embed Layout)
     payload_dict = {
         "embeds": [
             {
@@ -149,7 +149,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getcall = conn.getresponse()
+        response = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
@@ -162,5 +162,4 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     except Exception as e:
         print(f"Netzwerkfehler beim Senden an Discord: {e}")
 
-# Live Check ausführen
 check_smyths_stock()
