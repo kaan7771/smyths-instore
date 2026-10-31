@@ -26,8 +26,8 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT MIT DER STABILEN SUBDOMAIN (://google.com) UND DIREKTEM SUCHPARAMETER
-    maps_url = "https://://google.com/?q=Smyths+Toys+Hoergensweg+5+22523+Eimsbuettel"
+    # JETZT KORREKT: Keine doppelten Doppelpunkte mehr!
+    maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
