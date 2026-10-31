@@ -14,13 +14,13 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
+        # Haupttext der Regeln
         rules_text = (
-            "# RULES\n\n"
             "Please follow all the rules listed below while participating in this server.\n\n"
             "1. **No harassment of others**\n"
             "Racism, sexism, xenophobia, transphobia, homophobia, misogyny, etc. are not allowed.\n\n"
             "2. **Keep all discussion civil and in the correct channels**\n"
-            "Mods may asks you to move your conversation to the correct channel.\n\n"
+            "Mods may asks you to move your conversation to the conversation channel.\n\n"
             "3. **No inappropriate language**\n"
             "Remain respectful of others at all times.\n\n"
             "4. **Keep personal drama out of chat**\n"
@@ -45,32 +45,32 @@ async def on_ready():
             "Terms of Service: https://discordapp.com\n"
             "Community Guidelines: https://discord.com\n\n"
             "14. **Moderators hold final say**\n"
-            "Listen to and respect the volunteers that keep this server running.\n"
-            "\n‎\n"
-            "**React once you have understood.**"
+            "Listen to and respect the volunteers that keep this server running.\n\n"
+            "# React once you have understood." # Macht den Satz durch das '#' riesengroß wie RULES!
         )
         
-        # Erstellt den Kasten mit dem farbigen linken Rand (TCG-Orange/Gelb)
-        embed = discord.Embed(
+        # Kasten 1: Nur für das große Banner (Exakt wie bei TCGAlerts)
+        embed_image = discord.Embed(color=16753920)
+        embed_image.set_image(url="attachment://rules_banner.png")
+        
+        # Kasten 2: Für den Text der Regeln
+        embed_text = discord.Embed(
+            title="RULES",
             description=rules_text,
-            color=16753920 
+            color=16753920
         )
         
         image_path = "rules_banner.png.jfif"
         
         try:
             if os.path.exists(image_path):
-                # Weist das Bild als Anhang zu
-                file = File(image_path, filename="rules_logo.png")
-                # JETZT NEU: set_thumbnail packt das Bild kompakt oben rechts IN den Kasten!
-                embed.set_thumbnail(url="attachment://rules_logo.png")
-                
-                # Sendet das Bild eingebunden im Kasten ab
-                await channel.send(file=file, embed=embed)
-                print("Erfolg: Regeln mit kompaktem Logo im Kasten wurden gesendet!")
+                file = File(image_path, filename="rules_banner.png")
+                # Wir senden beide Kästen zusammen in einer einzigen Nachricht ab!
+                await channel.send(file=file, embeds=[embed_image, embed_text])
+                print("Erfolg: Regeln im TCGAlerts-Stil gesendet!")
             else:
-                print(f"Hinweis: '{image_path}' wurde nicht gefunden. Sende nur Kasten...")
-                await channel.send(embed=embed)
+                print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
+                await channel.send(embed=embed_text)
                 
         except Exception as e:
             print(f"Fehler beim Senden: {e}")
