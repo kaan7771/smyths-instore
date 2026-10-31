@@ -27,10 +27,9 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # Sicher codierter Maps-Link, den Discord nicht mehr abschneiden kann
-    base_maps = "https://google.com"
-    query_param = urllib.parse.quote("Smyths Toys Hamburg-Eidelstedt Hoergensweg 5")
-    maps_url = f"{base_maps}{query_param}"
+    # JETZT REPARIERT: Schrägstrich ergänzt und die komplette URL sauber codiert
+    query_string = urllib.parse.quote("Smyths Toys Hamburg-Eidelstedt Hörgensweg 5 22523")
+    maps_url = f"https://google.com{query_string}"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
@@ -83,7 +82,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getcall = conn.getresponse()
+        response = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
