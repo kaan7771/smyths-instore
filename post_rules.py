@@ -14,12 +14,13 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
-        # RULES als größte Überschrift (#)
-        # Der Einleitungssatz als mittlere Überschrift (##) und fett gedruckt
-        # Der Schlusssatz als große Überschrift (#)
+        # # RULES = Riesig groß
+        # ### **Please follow...** = Etwas kleiner und fett gedruckt
+        # \n‎\n = Unsichtbarer extra Abstand vor Regel 1
         rules_text = (
             "# RULES\n\n"
-            "## **Please follow all the rules listed below while participating in this server.**\n\n"
+            "### **Please follow all the rules listed below while participating in this server.**\n"
+            "\n‎\n" # Macht den gewünschten extra Abstand zur ersten Regel
             "1. **No harassment of others**\n"
             "Racism, sexism, xenophobia, transphobia, homophobia, misogyny, etc. are not allowed.\n\n"
             "2. **Keep all discussion civil and in the correct channels**\n"
@@ -52,11 +53,11 @@ async def on_ready():
             "# React once you have understood."
         )
         
-        # Kasten 1: Für das Banner
+        # Kasten 1: Für das flachere Banner
         embed_image = discord.Embed(color=16753920)
         embed_image.set_image(url="attachment://rules_banner.png")
         
-        # Kasten 2: Für den formatierten Text
+        # Kasten 2: Für den perfekt formatierten Text
         embed_text = discord.Embed(
             description=rules_text,
             color=16753920
@@ -68,7 +69,7 @@ async def on_ready():
             if os.path.exists(image_path):
                 file = File(image_path, filename="rules_banner.png")
                 await channel.send(file=file, embeds=[embed_image, embed_text])
-                print("Erfolg: Regeln im angepassten TCGAlerts-Stil gesendet!")
+                print("Erfolg: Regeln mit angepassten Größen und Abständen gesendet!")
             else:
                 print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
                 await channel.send(embed=embed_text)
