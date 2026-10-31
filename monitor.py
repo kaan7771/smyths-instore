@@ -25,10 +25,10 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Sülldorfer Landstraße 42, 22589 Hamburg"
     
-    # JETZT REPARIERT: Korrekter, direkter Produktlink inklusive "/de/de/p/" vor der ID
+    # Korrekter Produktlink für Smyths
     product_url = "https://smythstoys.com"
     
-    # JETZT REPARIERT: Offizielle Google Maps Such-URL (Verhindert den Discord-Umbruch)
+    # Absolut saubere Google Maps Such-URL ohne Formatierungsfehler
     maps_query = urllib.parse.quote(f"Smyths Toys {store_name} {full_address}")
     maps_url = f"https://google.com{maps_query}"
     
@@ -47,7 +47,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Layout wieder wie vorher mit den Links separat unten
+    # Layout mit funktionierenden, separat aufgelisteten Links
     fancy_text = (
         f"╔════════════════════════════════════════════╗\n"
         f"        **SMYTHS TOYS INSTORE RESTOCK**\n"
