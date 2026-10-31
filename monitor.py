@@ -26,8 +26,8 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT UNZERSTÖRBAR: OpenStreetMap-Suche, die von Discord niemals beschnitten wird!
-    maps_url = "https://openstreetmap.org"
+    # Zurück zur besten Maps-URL-Struktur
+    maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
     send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url, maps_url)
@@ -80,7 +80,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getresponse()
+        response = conn.getcall = conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
