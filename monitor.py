@@ -24,7 +24,6 @@ def check_smyths_stock_SIMULATED():
     stock_display = "3" 
     full_address = "Hörgensweg 5, 22523 Eimsbüttel"
     
-    # Echte, funktionierende Ziel-Links
     product_url = "https://smythstoys.com"
     maps_url = "https://google.com"
     
@@ -42,7 +41,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     now = datetime.now()
     timestamp_str = now.strftime("%d.%m.%Y um %H:%M Uhr")
     
-    # Aufbau der Textstruktur für das Embed
     embed_description = (
         f"📝 **Product:** `{prod_name}`\n"
         f"💰 **Price:** `{price}`\n\n"
@@ -54,13 +52,12 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         f"• [Google Maps Navigation]({maps_url})"
     )
     
-    # JETZT NEU: Professionelles Discord Embed (Verhindert alle Vorschau-Kästen)
     payload_dict = {
         "embeds": [
             {
                 "title": "╔════════════════════════════════════════════╗\n        **SMYTHS TOYS INSTORE RESTOCK**\n╚════════════════════════════════════════════╝",
                 "description": embed_description,
-                "color": 16753920, # Orange/Gelb-Ton
+                "color": 16753920,
                 "footer": {
                     "text": f"TCGAlarm • Live Pings • Smyths Monitor • heute um {timestamp_str}"
                 }
@@ -85,7 +82,8 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
-        if status_code in:
+        # Fehlerhafte "in"-Abfrage umgangen:
+        if status_code == 200 or status_code == 201:
             print("Erfolg: Embed-Nachricht ohne hässliche Kästen gesendet!")
         else:
             print(f"Discord API Fehler ({response.status}): {data}")
