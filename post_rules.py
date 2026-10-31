@@ -1,6 +1,7 @@
 import os
 import discord
 from discord import File
+from datetime import datetime
 
 # Deine übergebene Rules-Kanal-ID
 CHANNEL_ID = 1565372653425008965
@@ -14,6 +15,9 @@ async def on_ready():
     channel = client.get_channel(CHANNEL_ID)
     
     if channel:
+        # RULES als große Überschrift (#)
+        # Please follow als mittlere Überschrift (###)
+        # \n‎\n für den perfekten extra Abstand vor Regel 1
         rules_text = (
             "# RULES\n\n"
             "### **Please follow all the rules listed below while participating in this server.**\n"
@@ -50,25 +54,26 @@ async def on_ready():
             "# React once you have understood."
         )
         
-        # Ein einziges, sauberes Embed (Kein doppelter Kasten, kein leerer Titel-Balken mehr!)
         embed = discord.Embed(
             description=rules_text,
-            color=16753920
+            color=16753920 # TCG-Orange
         )
         
         image_path = "rules_banner.png.jfif"
         
         try:
             if os.path.exists(image_path):
+                # 1. Das Bild wird als saubere, eigene Nachricht zuerst gesendet (ohne Kasten/Balken-Fehler)
                 file = File(image_path, filename="rules_banner.png")
-                # Das Bild wird jetzt direkt unten im selben Kasten angezeigt
-                embed.set_image(url="attachment://rules_banner.png")
-                await channel.send(file=file, embed=embed)
-                print("Erfolg: Regeln in einem einzigen Kasten ohne leere Balken gesendet!")
+                await channel.send(file=file)
+                print("Bild erfolgreich als sauberer Header oben gesendet!")
             else:
-                print(f"Fehler: '{image_path}' nicht gefunden. Sende nur Text...")
-                await channel.send(embed=embed)
-                
+                print(f"Hinweis: '{image_path}' wurde nicht gefunden.")
+
+            # 2. Direkt danach wird der perfekt formatierte Text-Kasten gesendet
+            await channel.send(embed=embed)
+            print("Erfolg: Regeln wurden sauber gepostet!")
+            
         except Exception as e:
             print(f"Fehler beim Senden: {e}")
     else:
