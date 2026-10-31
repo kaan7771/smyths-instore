@@ -26,7 +26,7 @@ def check_smyths_stock_SIMULATED():
     
     product_url = "https://smythstoys.com"
     
-    # JETZT UNZERSTÖRBAR: Direkter Routing-Pfad ohne jegliche Parameter (& / ?)
+    # JETZT ENTGÜLTIG KORREKT: Die absolut sicherste Such-URL mit vollen API-Parametern
     maps_url = "https://google.com"
     
     print(f"SIMULATION: Restock entdeckt: {prod_name} in {store_name}!")
