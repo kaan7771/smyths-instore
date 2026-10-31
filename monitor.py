@@ -8,7 +8,6 @@ import urllib.error
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 STATE_FILE = "stock_state.json"
 
-# Deine feste Discord Kanal-ID
 CHANNEL_ID = 1565663068695044187
 
 PRODUCTS = [
@@ -36,9 +35,7 @@ def save_state(state):
 
 def check_smyths_stock():
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     
     current_state = load_state()
@@ -47,10 +44,12 @@ def check_smyths_stock():
     print("Starte Smyths Live Stock Check...")
 
     for prod_id in PRODUCTS:
-        # KORREKTUR: Korrekte Domain und Slashes für den Smyths API-Pfad gesetzt
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
         cache_buster = int(datetime.now().timestamp())
-        api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}&cb={cache_buster}"
+        
+        # KORREKTUR: Explizite Trennung von Basis-URL und Query-Parametern für AllOrigins
+        encoded_url = urllib.parse.quote_plus(target_url)
+        api_url = f"https://allorigins.win{encoded_url}&cb={cache_buster}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
@@ -61,7 +60,7 @@ def check_smyths_stock():
                     smyths_raw = wrapper.get("contents", "")
                     
                     if not smyths_raw or "pointOfServices" not in smyths_raw:
-                        print(f"Warnung: Keine gültigen Daten für Produkt {prod_id} erhalten.")
+                        print(f"Warnung: Keine Daten im Proxy für Produkt {prod_id}.")
                         continue
                         
                     data = json.loads(smyths_raw)
