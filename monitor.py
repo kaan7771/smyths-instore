@@ -35,7 +35,6 @@ def save_state(state):
         json.dump(state, f, indent=4)
 
 def check_smyths_stock():
-    # Cache-Busting Header hinzugefügt, um Verzögerungen im Vergleich zu TCGAlert zu minimieren
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Cache-Control": "no-cache",
@@ -49,7 +48,6 @@ def check_smyths_stock():
 
     for prod_id in PRODUCTS:
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices"
-        # Nutzen einen zufälligen Zeitstempel-Parameter, um den AllOrigins-Cache zu umgehen
         cache_buster = int(datetime.now().timestamp())
         api_url = f"https://allorigins.win{urllib.parse.quote(target_url)}?cb={cache_buster}"
         
@@ -62,6 +60,7 @@ def check_smyths_stock():
                     smyths_raw = wrapper.get("contents", "")
                     
                     if not smyths_raw or "pointOfServices" not in smyths_raw:
+                        print(f"Warnung: Keine gültigen Daten für Produkt {prod_id} erhalten.")
                         continue
                         
                     data = json.loads(smyths_raw)
@@ -76,10 +75,7 @@ def check_smyths_stock():
                         is_in_stock = stock_level > 0 or stock_status == "inStock"
                         state_key = f"{prod_id}_{store_name}"
                         
-                        # Zustand für den Speichervorgang vorbereiten
                         new_state[state_key] = is_in_stock
-                        
-                        # KORREKTUR: Zuerst prüfen, ob es im alten Speicherstand als FALSE markiert war
                         was_in_stock = current_state.get(state_key, False)
                         
                         if is_in_stock and not was_in_stock:
@@ -97,9 +93,9 @@ def check_smyths_stock():
                             send_discord_bot_message(prod_name, price, store_name, stock_display, full_address, product_url)
                             
         except Exception as e:
+            print(f"Fehler bei Produkt {prod_id}: {e}")
             continue
 
-    # Zustand für den nächsten Durchlauf einfrieren
     save_state(new_state)
     print("Smyths Live Stock Check beendet.")
 
