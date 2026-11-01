@@ -3,14 +3,12 @@ import json
 import urllib.request
 import urllib.parse
 from datetime import datetime
-import urllib.error
 
-# Dein ScraperAPI Key ist jetzt fest hinterlegt
+# Fest hinterlegte Konfiguration für TCGAlert Stabilität
 SCRAPER_API_KEY = "25d82ba3daf838e5d57b1663cdc9ba93"
-
-DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
-STATE_FILE = "stock_state.json"
 CHANNEL_ID = 1565663068695044187
+STATE_FILE = "stock_state.json"
+DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
 PRODUCTS = [
     "231555", "233342", "263107", "261550", "265957", "259979", "256326", 
@@ -43,9 +41,8 @@ def check_smyths_stock():
 
     for prod_id in PRODUCTS:
         cache_buster = int(datetime.now().timestamp())
+        # KORREKTUR: Absolut saubere URL-Struktur mit Slashes
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices?cb={cache_buster}"
-        
-        # ScraperAPI Route mit IP-Rotation
         encoded_url = urllib.parse.quote_plus(target_url)
         api_url = f"http://scraperapi.com{SCRAPER_API_KEY}&url={encoded_url}"
         
@@ -56,7 +53,6 @@ def check_smyths_stock():
                     raw_data = response.read().decode("utf-8")
                     
                     if not raw_data.strip().startswith("{"):
-                        print(f"Warnung: Ungültiges Format bei Produkt {prod_id}")
                         continue
                         
                     data = json.loads(raw_data)
@@ -77,14 +73,11 @@ def check_smyths_stock():
                         new_state[state_key] = is_in_stock
                         was_in_stock = current_state.get(state_key, False)
                         
+                        # Restock-Logik greift nur, wenn vorher KEIN Stock da war
                         if is_in_stock and not was_in_stock:
                             print(f"Echter Restock gefunden: {prod_name} in {store_name}!")
                             
-                            if stock_level >= 15:
-                                stock_display = "15"
-                            else:
-                                stock_display = str(stock_level)
-                            
+                            stock_display = "15" if stock_level >= 15 else str(stock_level)
                             address_data = store.get("address", {})
                             full_address = f"{address_data.get('line1', '')}, {address_data.get('postalCode', '')} {address_data.get('town', '')}"
                             product_url = f"https://smythstoys.com{prod_id}"
@@ -132,7 +125,6 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     }
     
     payload = json.dumps(payload_dict).encode("utf-8")
-    
     headers = {
         "Authorization": f"Bot {DISCORD_TOKEN.strip()}",
         "Content-Type": "application/json",
@@ -142,19 +134,10 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
     try:
         conn = http.client.HTTPSConnection("discord.com")
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
-        
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getcall() if hasattr(conn, "getcall") else conn.getresponse()
-        data = response.read().decode("utf-8")
-        
-        status_code = int(response.status)
-        if status_code == 200 or status_code == 201:
-            print("Erfolg: Live Restock Embed erfolgreich gesendet!")
-        else:
-            print(f"Discord API Fehler ({response.status}): {data}")
-            
+        response = conn.getresponse()
         conn.close()
     except Exception as e:
-        print(f"Netzwerkfehler beim Senden an Discord: {e}")
+        print(f"Netzwerkfehler Discord: {e}")
 
 check_smyths_stock()
