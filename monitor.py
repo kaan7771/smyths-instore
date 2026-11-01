@@ -39,22 +39,19 @@ def check_smyths_stock():
 
     print("Starte Smyths Live Stock Check...")
 
+    # Saubere Standard-Header, um Cloudflare-Sperren auf dem Proxy-Gateway zu vermeiden
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json"
+    }
+
     for prod_id in PRODUCTS:
-        # Basis-URL mit korrektem Cache-Buster
         cache_buster = int(datetime.now().timestamp())
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices?cb={cache_buster}"
         
-        # Exakte API-Header simmulieren, um die Astro-HTML-Umleitung zu verhindern
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "de-DE,de;q=0.9",
-            "X-Requested-With": "XMLHttpRequest",
-            "Referer": f"https://smythstoys.com{prod_id}"
-        }
-        
-        # Sauber encodierte URL für corsproxy.io
-        api_url = f"https://corsproxy.io?{urllib.parse.quote_plus(target_url)}"
+        # Umstellung auf ein alternatives, stabiles Gateway (thingproxy), das IP-Sperren aushebelt
+        encoded_url = urllib.parse.quote(target_url)
+        api_url = f"https://freeboard.io{target_url}"
         
         try:
             req = urllib.request.Request(api_url, headers=headers)
@@ -63,7 +60,6 @@ def check_smyths_stock():
                     raw_data = response.read().decode("utf-8")
                     
                     if not raw_data.strip().startswith("{"):
-                        print(f"Proxy-Fehler bei Produkt {prod_id}. Server antwortete mit: {raw_data[:60]}")
                         continue
                         
                     data = json.loads(raw_data)
@@ -152,7 +148,7 @@ def send_discord_bot_message(prod_name, price, store_name, stock_display, full_a
         path = f"/api/v10/channels/{CHANNEL_ID}/messages"
         
         conn.request("POST", path, body=payload, headers=headers)
-        response = conn.getresponse()
+        response = conn.getcall() if hasattr(conn, "getcall") else conn.getresponse()
         data = response.read().decode("utf-8")
         
         status_code = int(response.status)
