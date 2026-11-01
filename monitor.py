@@ -5,9 +5,11 @@ import urllib.parse
 from datetime import datetime
 import urllib.error
 
+# Dein ScraperAPI Key ist jetzt fest hinterlegt
+SCRAPER_API_KEY = "25d82ba3daf838e5d57b1663cdc9ba93"
+
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 STATE_FILE = "stock_state.json"
-
 CHANNEL_ID = 1565663068695044187
 
 PRODUCTS = [
@@ -37,33 +39,27 @@ def check_smyths_stock():
     current_state = load_state()
     new_state = {}
 
-    print("Starte Smyths Live Stock Check...")
-
-    # Saubere Standard-Header, um Cloudflare-Sperren auf dem Proxy-Gateway zu vermeiden
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json"
-    }
+    print("Starte Smyths Live Stock Check via ScraperAPI...")
 
     for prod_id in PRODUCTS:
         cache_buster = int(datetime.now().timestamp())
         target_url = f"https://smythstoys.com{prod_id}/pointOfServices?cb={cache_buster}"
         
-        # Umstellung auf ein alternatives, stabiles Gateway (thingproxy), das IP-Sperren aushebelt
-        encoded_url = urllib.parse.quote(target_url)
-        api_url = f"https://freeboard.io{target_url}"
+        # ScraperAPI Route mit IP-Rotation
+        encoded_url = urllib.parse.quote_plus(target_url)
+        api_url = f"http://scraperapi.com{SCRAPER_API_KEY}&url={encoded_url}"
         
         try:
-            req = urllib.request.Request(api_url, headers=headers)
-            with urllib.request.urlopen(req, timeout=15) as response:
+            req = urllib.request.Request(api_url)
+            with urllib.request.urlopen(req, timeout=30) as response:
                 if response.status == 200:
                     raw_data = response.read().decode("utf-8")
                     
                     if not raw_data.strip().startswith("{"):
+                        print(f"Warnung: Ungültiges Format bei Produkt {prod_id}")
                         continue
                         
                     data = json.loads(raw_data)
-                    
                     if "pointOfServices" not in data:
                         continue
                         
